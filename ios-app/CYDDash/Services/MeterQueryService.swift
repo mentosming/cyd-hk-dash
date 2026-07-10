@@ -47,18 +47,31 @@ final class MeterQueryService: NSObject {
 
         guard let occupancy = await fetchOccupancy() else { return (2, []) }
 
+        // "Parkable right now" per the official OperatingPeriod table
+        let holidays = HolidayService()
+        let now = Date()
+        let (dayKind, minutes) = OperatingPeriod.context(for: now,
+                                                         isSunPH: holidays.isSundayOrPH(now))
+
         struct Group {
             var minDist = Double.greatestFiniteMagnitude
             var vacant = 0
             var total = 0
+            var minLPP: UInt8 = 255
         }
         var groups: [String: Group] = [:]
         for (space, dist) in nearby {
-            guard let occ = occupancy[space.id], occ.working else { continue }
+            guard let occ = occupancy[space.id], occ.working,
+                  OperatingPeriod.isParkable(code: space.operatingPeriod,
+                                             dayKind: dayKind, minutesOfDay: minutes)
+            else { continue }
             var g = groups[space.street] ?? Group()
             g.minDist = min(g.minDist, dist)
             g.total += 1
-            if occ.vacant { g.vacant += 1 }
+            if occ.vacant {
+                g.vacant += 1
+                if space.lpp > 0 { g.minLPP = min(g.minLPP, space.lpp) }
+            }
             groups[space.street] = g
         }
         if groups.isEmpty { return (3, []) }
@@ -74,7 +87,8 @@ final class MeterQueryService: NSObject {
                 name: name,
                 distM: UInt16(clamping: Int(g.minDist)),
                 vacant: UInt8(clamping: g.vacant),
-                total: UInt8(clamping: g.total))
+                total: UInt8(clamping: g.total),
+                lpp: g.minLPP == 255 ? 0 : g.minLPP)
         })
     }
 

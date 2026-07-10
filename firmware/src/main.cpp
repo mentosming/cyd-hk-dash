@@ -1,4 +1,4 @@
-// CYD-DASH — HK tunnel journey times / tolls / parking meters car dashboard
+// CYD-DASH — HK tunnel journey times / tolls / parking meters / fuel prices
 // Board: ESP32-2432S028R ("Cheap Yellow Display")
 #include <Arduino.h>
 #include <esp32_smartdisplay.h>
@@ -6,11 +6,14 @@
 #include "../include/app_config.h"
 #include "ble/gatt_server.h"
 #include "model/app_state.h"
+#include "model/data_cache.h"
 #include "model/hk_clock.h"
+#include "ui/calibrate.h"
 #include "ui/ui.h"
 
 static uint32_t g_lastUiTickMs = 0;
 static float g_backlight = -1.0f;
+static float g_ldrEMA = -1.0f;
 
 static void clearMetersPending(AppState& s) {
   s.metersPending = false;
@@ -18,14 +21,22 @@ static void clearMetersPending(AppState& s) {
 }
 
 static void updateBacklight() {
+  // Clock says night?
   bool night = false;
   if (hkclock::syncState() != hkclock::Sync::NEVER) {
     hkclock::Local t = hkclock::now();
     uint32_t minOfDay = t.secOfDay / 60;
     night = minOfDay >= NIGHT_START_MIN || minOfDay < NIGHT_END_MIN;
   }
+  // LDR says dark? (tunnel / covered car park during the day)
+  bool dark = false;
+#ifdef BOARD_HAS_CDS
+  uint16_t raw = analogRead(CDS);
+  g_ldrEMA = g_ldrEMA < 0 ? raw : g_ldrEMA * 0.9f + raw * 0.1f;
+  dark = g_ldrEMA > LDR_DARK_RAW;
+#endif
   // Any recent touch brings the panel back to full brightness for a while
-  float target = (!night || lv_display_get_inactive_time(NULL) < TOUCH_WAKE_MS)
+  float target = ((!night && !dark) || lv_display_get_inactive_time(NULL) < TOUCH_WAKE_MS)
                      ? DAY_BACKLIGHT
                      : NIGHT_BACKLIGHT;
   if (target != g_backlight) {
@@ -46,10 +57,12 @@ void setup() {
   // LVGL's timers never advance: the screen freezes on the first frame and
   // the touch indev is never read. Drive the LVGL tick from millis().
   lv_tick_set_cb([]() -> uint32_t { return millis(); });
+  calibrate::loadFromNVS();
   lv_display_set_rotation(lv_display_get_default(), LV_DISPLAY_ROTATION_270);
   smartdisplay_lcd_set_backlight(DAY_BACKLIGHT);
 
   ui::init();
+  datacache::begin();  // show last-known data immediately (greyed as stale)
   ble::begin();
   log_i("Setup complete, free heap %u", (unsigned)ESP.getFreeHeap());
 }
@@ -68,10 +81,11 @@ void loop() {
       appstate::with(clearMetersPending);
       s.metersPending = false;
     }
-    ui::tick(s);
+    if (!calibrate::isActive()) ui::tick(s);
 
     updateBacklight();
     hkclock::persistIfDue();
+    datacache::saveIfDue();
   }
   delay(5);
 }

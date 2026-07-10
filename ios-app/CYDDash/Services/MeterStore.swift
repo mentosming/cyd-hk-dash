@@ -16,6 +16,8 @@ final class MeterStore {
         let street: String    // Chinese (Street_tc) — shown on the device
         let lat: Double
         let lon: Double
+        let lpp: UInt8            // longest parking period, minutes (30/60/120)
+        let operatingPeriod: String  // official code, see OperatingPeriod.swift
     }
 
     private(set) var spaces: [Space] = []
@@ -96,19 +98,30 @@ final class MeterStore {
         guard lines.count > 3 else { return }
         lines.removeFirst(2)
         let header = Self.splitCSV(String(lines.removeFirst()))
-        guard let idCol = header.firstIndex(of: "ParkingSpaceId"),
+        guard let poleCol = header.firstIndex(of: "PoleId"),
+              let idCol = header.firstIndex(of: "ParkingSpaceId"),
               let streetCol = header.firstIndex(of: "Street_tc"),
               let latCol = header.firstIndex(of: "Latitude"),
-              let lonCol = header.firstIndex(of: "Longitude") else { return }
+              let lonCol = header.firstIndex(of: "Longitude"),
+              let vtCol = header.firstIndex(of: "VehicleType"),
+              let lppCol = header.firstIndex(of: "LPP"),
+              let opCol = header.firstIndex(of: "OperatingPeriod") else { return }
 
         var parsed: [Space] = []
         parsed.reserveCapacity(21000)
         for line in lines where !line.isEmpty {
             let cols = Self.splitCSV(String(line))
-            guard cols.count > max(idCol, streetCol, latCol, lonCol),
+            guard cols.count > max(poleCol, idCol, streetCol, latCol, lonCol, vtCol, lppCol, opCol),
                   let lat = Double(cols[latCol]), let lon = Double(cols[lonCol]),
-                  lat > 21, lat < 23, lon > 113, lon < 115 else { continue }
-            parsed.append(Space(id: cols[idCol], street: cols[streetCol], lat: lat, lon: lon))
+                  lat > 21, lat < 23, lon > 113, lon < 115,
+                  // private-car spaces only ("A" = any vehicle except MGV/HGV/bus/mc;
+                  // the data has one lowercase 'a')
+                  cols[vtCol].uppercased() == "A",
+                  // PoleId > 90000 = TD internal test meters (per official spec)
+                  Int(cols[poleCol]) ?? 0 < 90000 else { continue }
+            parsed.append(Space(id: cols[idCol], street: cols[streetCol], lat: lat, lon: lon,
+                                lpp: UInt8(cols[lppCol]) ?? 0,
+                                operatingPeriod: cols[opCol]))
         }
         guard !parsed.isEmpty else { return }
         spaces = parsed

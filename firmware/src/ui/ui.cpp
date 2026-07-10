@@ -3,7 +3,9 @@
 #include <esp32_smartdisplay.h>
 
 #include "../../include/app_config.h"
+#include "../ble/gatt_server.h"
 #include "../model/hk_clock.h"
+#include "calibrate.h"
 #include "ui_internal.h"
 
 namespace ui {
@@ -18,8 +20,8 @@ lv_obj_t* g_btDot;
 lv_obj_t* g_lblUpdated;
 int g_page = 0;
 
-const char* kPageTitles[PAGE_COUNT] = {"過海隧道", "主要幹道", "附近咪錶"};
-const char* kTabLabels[PAGE_COUNT] = {"過海", "幹道", "咪錶"};
+const char* kPageTitles[PAGE_COUNT] = {"過海隧道", "主要幹道", "附近咪錶", "油價"};
+const char* kTabLabels[PAGE_COUNT] = {"過海", "幹道", "咪錶", "油價"};
 
 void showPage(int idx) {
   g_page = (idx + PAGE_COUNT) % PAGE_COUNT;
@@ -42,6 +44,38 @@ void onGesture(lv_event_t* e) {
 }
 
 void onTitleTap(lv_event_t*) { showPage(g_page + 1); }
+
+void onTitleLongPress(lv_event_t*) { calibrate::start(); }
+
+// Long-press the clock: forget all BLE bonds (admin escape hatch)
+void onClockLongPress(lv_event_t*) {
+  ble::clearBonds();
+}
+
+// Pairing PIN modal, driven by AppState.showPasskey
+lv_obj_t* g_pinOverlay = nullptr;
+
+void updatePasskeyOverlay(uint32_t passkey) {
+  if (passkey != 0 && g_pinOverlay == nullptr) {
+    g_pinOverlay = lv_obj_create(lv_layer_top());
+    lv_obj_set_size(g_pinOverlay, 240, 110);
+    lv_obj_center(g_pinOverlay);
+    lv_obj_set_style_bg_color(g_pinOverlay, C(COL_CARD), 0);
+    lv_obj_set_style_border_color(g_pinOverlay, C(COL_ETOLL), 0);
+    lv_obj_set_style_border_width(g_pinOverlay, 2, 0);
+    lv_obj_set_style_radius(g_pinOverlay, 12, 0);
+    lv_obj_remove_flag(g_pinOverlay, LV_OBJ_FLAG_SCROLLABLE);
+
+    lv_obj_t* title = makeLabel(g_pinOverlay, &font_cjk_16, COL_TEXT_DIM, "藍牙 PIN");
+    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 4);
+    lv_obj_t* pin = makeLabel(g_pinOverlay, &lv_font_montserrat_40, COL_ETOLL, "");
+    lv_label_set_text_fmt(pin, "%06lu", (unsigned long)passkey);
+    lv_obj_align(pin, LV_ALIGN_BOTTOM_MID, 0, -10);
+  } else if (passkey == 0 && g_pinOverlay != nullptr) {
+    lv_obj_delete(g_pinOverlay);
+    g_pinOverlay = nullptr;
+  }
+}
 
 void onTabTap(lv_event_t* e) {
   intptr_t idx = (intptr_t)lv_event_get_user_data(e);
@@ -80,6 +114,24 @@ lv_obj_t* makeLabel(lv_obj_t* parent, const lv_font_t* font, uint32_t colour, co
   lv_obj_set_style_text_color(l, C(colour), 0);
   lv_label_set_text(l, text);
   return l;
+}
+
+void setTrendArrow(lv_obj_t* label, uint8_t nowMin, uint8_t prevMin) {
+  // Only meaningful when both captures carry real minutes
+  if (nowMin >= proto::kMinutesClosed || prevMin >= proto::kMinutesClosed || prevMin == 0) {
+    lv_label_set_text(label, "");
+    return;
+  }
+  int delta = (int)nowMin - (int)prevMin;
+  if (delta >= 2) {
+    lv_label_set_text(label, "↑");
+    lv_obj_set_style_text_color(label, C(COL_RED), 0);
+  } else if (delta <= -2) {
+    lv_label_set_text(label, "↓");
+    lv_obj_set_style_text_color(label, C(COL_GREEN), 0);
+  } else {
+    lv_label_set_text(label, "");
+  }
 }
 
 void setMinutesLabel(lv_obj_t* label, uint8_t minutes, uint8_t colour, bool dim,
@@ -132,9 +184,12 @@ void init() {
   lv_obj_align(g_lblTitle, LV_ALIGN_LEFT_MID, 20, 0);
   lv_obj_add_flag(g_lblTitle, LV_OBJ_FLAG_CLICKABLE);
   lv_obj_add_event_cb(g_lblTitle, onTitleTap, LV_EVENT_CLICKED, nullptr);
+  lv_obj_add_event_cb(g_lblTitle, onTitleLongPress, LV_EVENT_LONG_PRESSED, nullptr);
 
   g_lblClock = makeLabel(hdr, &lv_font_montserrat_20, COL_TEXT, "--:--");
   lv_obj_align(g_lblClock, LV_ALIGN_RIGHT_MID, -26, 0);
+  lv_obj_add_flag(g_lblClock, LV_OBJ_FLAG_CLICKABLE);
+  lv_obj_add_event_cb(g_lblClock, onClockLongPress, LV_EVENT_LONG_PRESSED, nullptr);
 
   // updated-age text, centred in the header
   g_lblUpdated = makeLabel(hdr, &font_cjk_16, COL_TEXT_DIM, "等待數據");
@@ -152,6 +207,7 @@ void init() {
   g_pages[0] = pageHarbourCreate(scr);
   g_pages[1] = pageRoutesCreate(scr);
   g_pages[2] = pageMetersCreate(scr);
+  g_pages[3] = pageFuelCreate(scr);
 
   // ---- Footer: big tappable tab bar (reliable target for resistive touch) ----
   lv_obj_t* ftr = makeBox(scr);
@@ -207,9 +263,12 @@ void tick(const AppState& s) {
         g_lblUpdated, C(ageS > JOURNEY_STALE_S ? (uint32_t)COL_AMBER : (uint32_t)COL_TEXT_DIM), 0);
   }
 
+  updatePasskeyOverlay(s.showPasskey);
+
   pageHarbourUpdate(s, dim);
   pageRoutesUpdate(s, dim);
   pageMetersUpdate(s);
+  pageFuelUpdate(s);
 }
 
 }  // namespace ui

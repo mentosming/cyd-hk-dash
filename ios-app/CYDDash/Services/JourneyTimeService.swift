@@ -45,7 +45,7 @@ final class JourneyTimeService: NSObject {
             }
         }
 
-        let entries = DashProtocol.slots.map { slot -> DashProtocol.JourneyEntry in
+        let entries = SlotConfig.journeySlots().map { slot -> DashProtocol.JourneyEntry in
             guard let r = byPair["\(slot.location)|\(slot.destination)"] else {
                 return .init(slot: slot.slot, minutes: DashProtocol.minutesNA, colour: 0)
             }

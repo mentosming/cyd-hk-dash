@@ -20,6 +20,8 @@ AppState snapshot() {
   // Reading a snapshot consumes the dirty flags.
   g_state.journeyDirty = false;
   g_state.metersDirty = false;
+  g_state.fuelDirty = false;
+  g_state.slotNamesDirty = false;
   g_state.linkDirty = false;
   xSemaphoreGive(g_mutex);
   return copy;

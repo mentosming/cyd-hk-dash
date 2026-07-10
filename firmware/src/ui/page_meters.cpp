@@ -15,6 +15,7 @@ lv_obj_t* g_status;
 lv_obj_t* g_rows[NROWS];
 lv_obj_t* g_rowName[NROWS];
 lv_obj_t* g_rowDist[NROWS];
+lv_obj_t* g_rowLPP[NROWS];
 lv_obj_t* g_rowVacant[NROWS];
 lv_obj_t* g_rowTotal[NROWS];
 
@@ -60,17 +61,20 @@ lv_obj_t* pageMetersCreate(lv_obj_t* parent) {
 
     g_rowName[i] = makeLabel(g_rows[i], &font_cjk_16, COL_TEXT, "");
     lv_obj_align(g_rowName[i], LV_ALIGN_LEFT_MID, 8, 0);
-    lv_obj_set_width(g_rowName[i], 180);
+    lv_obj_set_width(g_rowName[i], 122);
     lv_label_set_long_mode(g_rowName[i], LV_LABEL_LONG_DOT);
 
     g_rowDist[i] = makeLabel(g_rows[i], &font_cjk_16, COL_TEXT_DIM, "");
-    lv_obj_align(g_rowDist[i], LV_ALIGN_RIGHT_MID, -66, 0);
+    lv_obj_align(g_rowDist[i], LV_ALIGN_RIGHT_MID, -108, 0);
+
+    g_rowLPP[i] = makeLabel(g_rows[i], &font_cjk_16, COL_TEXT_DIM, "");
+    lv_obj_align(g_rowLPP[i], LV_ALIGN_RIGHT_MID, -58, 0);
 
     g_rowVacant[i] = makeLabel(g_rows[i], &lv_font_montserrat_20, COL_GREEN, "");
-    lv_obj_align(g_rowVacant[i], LV_ALIGN_RIGHT_MID, -34, 0);
+    lv_obj_align(g_rowVacant[i], LV_ALIGN_RIGHT_MID, -30, 0);
 
     g_rowTotal[i] = makeLabel(g_rows[i], &font_cjk_16, COL_TEXT_DIM, "");
-    lv_obj_align(g_rowTotal[i], LV_ALIGN_RIGHT_MID, -8, 1);
+    lv_obj_align(g_rowTotal[i], LV_ALIGN_RIGHT_MID, -6, 1);
   }
   return page;
 }
@@ -107,11 +111,16 @@ void pageMetersUpdate(const AppState& s) {
       lv_obj_remove_flag(g_rows[i], LV_OBJ_FLAG_HIDDEN);
       lv_label_set_text(g_rowName[i], g.name);
       lv_label_set_text_fmt(g_rowDist[i], "%u米", (unsigned)g.dist_m);
+      if (g.lpp > 0)
+        lv_label_set_text_fmt(g_rowLPP[i], "%u分", (unsigned)g.lpp);
+      else
+        lv_label_set_text(g_rowLPP[i], "");
       lv_label_set_text_fmt(g_rowVacant[i], "%u", (unsigned)g.vacant);
       lv_label_set_text_fmt(g_rowTotal[i], "/%u", (unsigned)g.total);
       lv_obj_set_style_text_color(g_rowVacant[i], C(g.vacant == 0 ? COL_RED : COL_GREEN), 0);
-      lv_obj_align(g_rowVacant[i], LV_ALIGN_RIGHT_MID, -34, 0);
-      lv_obj_align(g_rowDist[i], LV_ALIGN_RIGHT_MID, -66, 0);
+      lv_obj_align(g_rowVacant[i], LV_ALIGN_RIGHT_MID, -30, 0);
+      lv_obj_align(g_rowDist[i], LV_ALIGN_RIGHT_MID, -108, 0);
+      lv_obj_align(g_rowLPP[i], LV_ALIGN_RIGHT_MID, -58, 0);
     } else {
       lv_obj_add_flag(g_rows[i], LV_OBJ_FLAG_HIDDEN);
     }

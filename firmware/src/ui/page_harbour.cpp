@@ -11,6 +11,8 @@ namespace {
 struct TunnelCard {
   lv_obj_t* minutesHK2K;  // 港→九
   lv_obj_t* minutesK2HK;  // 九→港
+  lv_obj_t* arrowHK2K;    // trend vs previous capture
+  lv_obj_t* arrowK2HK;
   lv_obj_t* tollPill;
   lv_obj_t* tollLabel;
   lv_obj_t* tollNext;
@@ -44,12 +46,16 @@ lv_obj_t* pageHarbourCreate(lv_obj_t* parent) {
     lv_obj_set_pos(lbl1, 62, 5);
     c.minutesHK2K = makeLabel(card, &lv_font_montserrat_28, COL_TEXT_DIM, "--");
     lv_obj_set_pos(c.minutesHK2K, 62, 24);
+    c.arrowHK2K = makeLabel(card, &font_cjk_16, COL_TEXT_DIM, "");
+    lv_obj_set_pos(c.arrowHK2K, 112, 28);
 
     // 九→港 group
     lv_obj_t* lbl2 = makeLabel(card, &font_cjk_16, COL_TEXT_DIM, "九→港");
     lv_obj_set_pos(lbl2, 142, 5);
     c.minutesK2HK = makeLabel(card, &lv_font_montserrat_28, COL_TEXT_DIM, "--");
     lv_obj_set_pos(c.minutesK2HK, 142, 24);
+    c.arrowK2HK = makeLabel(card, &font_cjk_16, COL_TEXT_DIM, "");
+    lv_obj_set_pos(c.arrowK2HK, 192, 28);
 
     // HKeToll-style toll pill
     c.tollPill = lv_obj_create(card);
@@ -92,6 +98,8 @@ void pageHarbourUpdate(const AppState& s, bool dim) {
     TunnelCard& c = g_cards[i];
     setMinutesLabel(c.minutesHK2K, mins[kSlotHK2K[i]], cols[kSlotHK2K[i]], dim);
     setMinutesLabel(c.minutesK2HK, mins[kSlotK2HK[i]], cols[kSlotK2HK[i]], dim);
+    setTrendArrow(c.arrowHK2K, mins[kSlotHK2K[i]], s.prevMinutes[kSlotHK2K[i]]);
+    setTrendArrow(c.arrowK2HK, mins[kSlotK2HK[i]], s.prevMinutes[kSlotK2HK[i]]);
 
     if (!clockOk) {
       lv_obj_set_style_bg_color(c.tollPill, C(COL_CARD_BORDER), 0);

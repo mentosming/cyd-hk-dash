@@ -32,8 +32,22 @@ struct ContentView: View {
                 }
 
                 Section("咪錶") {
-                    LabeledContent("資料庫", value: "\(coordinator.meterStore.count) 個車位")
-                    Text("掃一掃會喺 4 公里內搵最近有空位嘅街道")
+                    LabeledContent("資料庫", value: "\(coordinator.meterStore.count) 個私家車位")
+                    Text("掃一掃會喺 4 公里內搵最近有空位、而家准泊嘅街道；掃完 10 分鐘內自動更新")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Section("幹道頁路線（slots 7-9）") {
+                    ForEach(SlotConfig.configurableSlots, id: \.self) { slot in
+                        Picker("路線 \(slot - 6)", selection: slotBinding(slot)) {
+                            ForEach(SlotConfig.options) { opt in
+                                Text("\(opt.name)（\(opt.location)→\(opt.destination)）")
+                                    .tag(opt.id)
+                            }
+                        }
+                    }
+                    Text("改完路線會即時推送新名同數據去顯示屏")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -51,6 +65,17 @@ struct ContentView: View {
                 coordinator.meterQuery.requestPermissions()
             }
         }
+    }
+
+    private func slotBinding(_ slot: UInt8) -> Binding<String> {
+        Binding(
+            get: { SlotConfig.selected(slot: slot).id },
+            set: { newID in
+                guard let opt = SlotConfig.options.first(where: { $0.id == newID }) else { return }
+                SlotConfig.setSelected(slot: slot, option: opt)
+                coordinator.routeConfigChanged()
+            }
+        )
     }
 }
 

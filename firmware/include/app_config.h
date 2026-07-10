@@ -1,18 +1,23 @@
 #pragma once
 
 #define FW_MAJOR 0
-#define FW_MINOR 1
-#define PROTOCOL_VERSION 1
+#define FW_MINOR 2
+#define PROTOCOL_VERSION 2
 
 // BLE
 #define BLE_DEVICE_NAME      "CYD-DASH"
+// Bonding: writes require encryption; pairing PIN is shown on screen.
+// Set to 0 to revert to open access (no re-pairing needed after flashing).
+#define BLE_REQUIRE_BONDING 1
+#define BLE_PASSKEY 924031
 #define UUID_SERVICE   "9A3F0001-6D2C-4C8A-9B4E-1F2E3D4C5B6A"
 #define UUID_JOURNEY   "9A3F0002-6D2C-4C8A-9B4E-1F2E3D4C5B6A"
 #define UUID_TIMESYNC  "9A3F0003-6D2C-4C8A-9B4E-1F2E3D4C5B6A"
 #define UUID_METERS    "9A3F0004-6D2C-4C8A-9B4E-1F2E3D4C5B6A"
-#define UUID_COMMAND   "9A3F0005-6D2C-4C8A-9B4E-1F2E3D4C5B6A"
-#define UUID_STATUS    "9A3F0006-6D2C-4C8A-9B4E-1F2E3D4C5B6A"
-#define UUID_METERMAP  "9A3F0007-6D2C-4C8A-9B4E-1F2E3D4C5B6A"
+#define UUID_COMMAND    "9A3F0005-6D2C-4C8A-9B4E-1F2E3D4C5B6A"
+#define UUID_STATUS     "9A3F0006-6D2C-4C8A-9B4E-1F2E3D4C5B6A"
+#define UUID_SLOTNAMES  "9A3F0008-6D2C-4C8A-9B4E-1F2E3D4C5B6A"
+#define UUID_FUELPRICES "9A3F0009-6D2C-4C8A-9B4E-1F2E3D4C5B6A"
 
 // Command opcodes (ESP -> phone)
 #define CMD_METERS_REFRESH 0x01
@@ -32,3 +37,6 @@
 #define NIGHT_BACKLIGHT 0.25f
 #define DAY_BACKLIGHT   1.0f
 #define TOUCH_WAKE_MS   (30 * 1000UL)
+// CYD LDR on GPIO34 (CDS): higher ADC reading = darker with the 0dB
+// attenuation the library configures. Tune after in-car testing.
+#define LDR_DARK_RAW    3200

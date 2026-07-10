@@ -18,11 +18,16 @@ final class DashCoordinator: NSObject, ObservableObject {
     let holidays = HolidayService()
     let journeyService = JourneyTimeService()
     let meterStore = MeterStore()
+    let fuelService = FuelPriceService()
     lazy var meterQuery = MeterQueryService(store: meterStore)
 
     private var lastJourneyFetch: Date = .distantPast
     private var linkReady = false        // characteristics discovered
     private var metersRequestPending = false
+    private var lastFuelPush: Date = .distantPast
+    // Auto-refresh window: after a successful scan, keep meters fresh for 10 min
+    private var metersAutoUntil: Date = .distantPast
+    private var lastMetersRun: Date = .distantPast
 
     override init() {
         super.init()
@@ -64,17 +69,13 @@ final class DashCoordinator: NSObject, ObservableObject {
         lastJourneyFetch = Date()
 
         // Write TimeSync FIRST, with no await before it. The holiday feed
-        // (isSundayOrPH uses the cached set only) must never block this — a
+        // (sunPHFlags uses the cached set only) must never block this — a
         // hung network fetch here used to stall the whole push.
-        let now = Date()
-        let tomorrow = now.addingTimeInterval(86400)
         central.write(
-            DashProtocol.encodeTimeSync(
-                now: now,
-                todaySunPH: holidays.isSundayOrPH(now),
-                tomorrowSunPH: holidays.isSundayOrPH(tomorrow)),
+            DashProtocol.encodeTimeSync(sunPHFlags: holidays.sunPHFlags),
             to: DashProtocol.UUIDs.timeSync)
         log("已推送時間同步")
+        if force { pushSlotNames() }
 
         Task {
             do {
@@ -88,13 +89,45 @@ final class DashCoordinator: NSObject, ObservableObject {
                 log("行車時間讀取失敗: \(error.localizedDescription)")
             }
         }
-        // Holiday refresh is best-effort and off the hot path.
+        // Off the hot path: holiday cache + fuel prices (6-hourly).
         Task { await holidays.refreshIfStale() }
+        pushFuelIfStale(force: force)
+    }
+
+    func pushSlotNames() {
+        central.write(DashProtocol.encodeSlotNames(SlotConfig.slotNamesPayloadEntries()),
+                      to: DashProtocol.UUIDs.slotNames)
+        log("已推送路線名稱")
+    }
+
+    /// Called by the settings UI when the user changes a slot route.
+    func routeConfigChanged() {
+        guard linkReady else { return }
+        pushSlotNames()
+        pushTimeSyncAndJourney(force: true)
+    }
+
+    private func pushFuelIfStale(force: Bool) {
+        guard force || -lastFuelPush.timeIntervalSinceNow > 6 * 3600 else { return }
+        Task {
+            guard await fuelService.refreshIfStale() else {
+                log("油價讀取失敗（無 cache）")
+                return
+            }
+            central.write(
+                DashProtocol.encodeFuelPrices(
+                    fetchEpoch: UInt32((fuelService.fetchedAt ?? Date()).timeIntervalSince1970),
+                    cents: fuelService.cents),
+                to: DashProtocol.UUIDs.fuelPrices)
+            lastFuelPush = Date()
+            log("已推送油價（消委會，\(String(format: "%.1f", fuelService.ageHours))小時前數據）")
+        }
     }
 
     private func runMetersFlow() {
         // Buy background time: the whole flow (GPS + ~700 KB fetch) can
         // exceed the ~10 s BLE wake window.
+        lastMetersRun = Date()
         let bgTask = UIApplication.shared.beginBackgroundTask(withName: "meters")
         Task {
             log("掃描開始: 資料庫\(meterStore.count)個位, 定位權限[\(meterQuery.authDescription)]")
@@ -107,6 +140,8 @@ final class DashCoordinator: NSObject, ObservableObject {
             lastMetersPush = Date()
             switch status {
             case 0, 4:
+                // keep the list fresh for the next 10 minutes (journey ticks drive it)
+                metersAutoUntil = Date().addingTimeInterval(600)
                 log((status == 4 ? "咪錶(全滿): " : "咪錶: ")
                     + groups.map { "\($0.name) \($0.vacant)/\($0.total)" }.joined(separator: ", "))
             case 1: log("咪錶: 定位失敗")
@@ -150,6 +185,11 @@ extension DashCoordinator: DashCentralDelegate {
                 }
             case .journeyTick:
                 pushTimeSyncAndJourney()
+                // meters auto-refresh window (10 min after a manual scan)
+                if Date() < metersAutoUntil, -lastMetersRun.timeIntervalSinceNow > 110 {
+                    log("咪錶自動刷新")
+                    runMetersFlow()
+                }
             case .fullResync:
                 pushTimeSyncAndJourney(force: true)
             }

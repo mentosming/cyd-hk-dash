@@ -56,6 +56,8 @@ void onTimeSync(uint32_t epochUtc, int16_t tzMin, uint8_t phFlags) {
 
 Sync syncState() { return g_sync; }
 
+uint32_t epochUtc() { return g_sync == Sync::NEVER ? 0 : epochUtcNow(); }
+
 Local now() {
   Local l{};
   if (g_sync == Sync::NEVER) return l;
@@ -71,8 +73,10 @@ Local now() {
 bool sundayOrPH() {
   Local l = now();
   if (g_sync == Sync::NEVER) return false;
-  if (l.days == g_phFlagsDay) return g_phFlags & 0x01;
-  if (l.days == g_phFlagsDay + 1) return g_phFlags & 0x02;
+  // phFlags covers 4 consecutive days starting at the sync date
+  if (l.days >= g_phFlagsDay && l.days <= g_phFlagsDay + 3) {
+    return g_phFlags & (1 << (l.days - g_phFlagsDay));
+  }
   return l.dow == 0;
 }
 

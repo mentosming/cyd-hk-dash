@@ -19,12 +19,15 @@ struct Local {
 };
 
 void begin();  // load NVS
+// phFlags bits 0-3: today / +1 / +2 / +3 days use the Sun/PH schedule
 void onTimeSync(uint32_t epochUtc, int16_t tzMin, uint8_t phFlags);
 Sync syncState();
 Local now();
+// Current UTC epoch, 0 if never synced. Used for data-age display.
+uint32_t epochUtc();
 // True if today should use the Sunday/PH toll schedule.
-// Uses phone-provided PH flags when they match today's date, else falls back
-// to "is it Sunday".
+// Uses phone-provided PH flags when today is within their 4-day window,
+// else falls back to "is it Sunday".
 bool sundayOrPH();
 void persistIfDue();  // call from loop; saves every CLOCK_NVS_SAVE_MS
 

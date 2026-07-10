@@ -26,7 +26,7 @@ constexpr uint32_t COL_ETOLL_LT = 0x60C3B1;
 constexpr int SCR_W = 320, SCR_H = 240;
 constexpr int HDR_H = 30, FTR_H = 34;  // footer is a big tappable tab bar
 constexpr int PAGE_Y = HDR_H, PAGE_H = SCR_H - HDR_H - FTR_H;
-constexpr int PAGE_COUNT = 3;
+constexpr int PAGE_COUNT = 4;
 
 inline lv_color_t C(uint32_t c) { return lv_color_hex(c); }
 
@@ -51,6 +51,9 @@ lv_obj_t* makeLabel(lv_obj_t* parent, const lv_font_t* font, uint32_t colour, co
 void setMinutesLabel(lv_obj_t* label, uint8_t minutes, uint8_t colour, bool dim,
                      const lv_font_t* bigFont = &lv_font_montserrat_28);
 
+// Trend arrow vs the previous capture: sets "↑" (red) / "↓" (green) or hides.
+void setTrendArrow(lv_obj_t* label, uint8_t nowMin, uint8_t prevMin);
+
 // Pages: each creates its container (hidden) and exposes an update fn.
 lv_obj_t* pageHarbourCreate(lv_obj_t* parent);
 void pageHarbourUpdate(const AppState& s, bool dim);
@@ -58,5 +61,7 @@ lv_obj_t* pageRoutesCreate(lv_obj_t* parent);
 void pageRoutesUpdate(const AppState& s, bool dim);
 lv_obj_t* pageMetersCreate(lv_obj_t* parent);
 void pageMetersUpdate(const AppState& s);
+lv_obj_t* pageFuelCreate(lv_obj_t* parent);
+void pageFuelUpdate(const AppState& s);
 
 }  // namespace ui

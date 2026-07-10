@@ -13,6 +13,15 @@ final class HolidayService {
         dates = Set(UserDefaults.standard.stringArray(forKey: Self.cacheKey) ?? [])
     }
 
+    /// bits 0-3: today / +1 / +2 / +3 days (HK local) use the Sun/PH schedule.
+    var sunPHFlags: UInt8 {
+        var flags: UInt8 = 0
+        for i in 0..<4 where isSundayOrPH(Date().addingTimeInterval(Double(i) * 86400)) {
+            flags |= 1 << i
+        }
+        return flags
+    }
+
     /// True if `date` (HK time) is a Sunday or a public holiday.
     func isSundayOrPH(_ date: Date) -> Bool {
         var cal = Calendar(identifier: .gregorian)

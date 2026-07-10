@@ -23,7 +23,8 @@ final class DashCentral: NSObject {
     private var chrJourney: CBCharacteristic?
     private var chrTimeSync: CBCharacteristic?
     private var chrMeters: CBCharacteristic?
-    private var chrMeterMap: CBCharacteristic?
+    private var chrSlotNames: CBCharacteristic?
+    private var chrFuelPrices: CBCharacteristic?
     private var chrCommand: CBCharacteristic?
     private var chrStatus: CBCharacteristic?
     private var lastStatus: DashProtocol.DeviceStatus?
@@ -68,7 +69,8 @@ final class DashCentral: NSObject {
         case DashProtocol.UUIDs.journey: return chrJourney
         case DashProtocol.UUIDs.timeSync: return chrTimeSync
         case DashProtocol.UUIDs.meters: return chrMeters
-        case DashProtocol.UUIDs.meterMap: return chrMeterMap
+        case DashProtocol.UUIDs.slotNames: return chrSlotNames
+        case DashProtocol.UUIDs.fuelPrices: return chrFuelPrices
         default: return nil
         }
     }
@@ -131,7 +133,8 @@ extension DashCentral: CBCentralManagerDelegate {
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral p: CBPeripheral,
                         error: Error?) {
         isConnected = false
-        chrJourney = nil; chrTimeSync = nil; chrMeters = nil; chrMeterMap = nil
+        chrJourney = nil; chrTimeSync = nil; chrMeters = nil
+        chrSlotNames = nil; chrFuelPrices = nil
         chrCommand = nil; chrStatus = nil
         delegate?.dashCentralDisconnected(self)
         log("已斷線，重新排隊連接")
@@ -160,7 +163,8 @@ extension DashCentral: CBPeripheralDelegate {
             case DashProtocol.UUIDs.journey: chrJourney = chr
             case DashProtocol.UUIDs.timeSync: chrTimeSync = chr
             case DashProtocol.UUIDs.meters: chrMeters = chr
-            case DashProtocol.UUIDs.meterMap: chrMeterMap = chr
+            case DashProtocol.UUIDs.slotNames: chrSlotNames = chr
+            case DashProtocol.UUIDs.fuelPrices: chrFuelPrices = chr
             case DashProtocol.UUIDs.command:
                 chrCommand = chr
                 p.setNotifyValue(true, for: chr)

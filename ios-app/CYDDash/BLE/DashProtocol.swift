@@ -1,9 +1,9 @@
-// Payload encoders — normative spec: docs/ble-protocol.md (PROTOCOL_VERSION 1)
+// Payload encoders — normative spec: docs/ble-protocol.md (PROTOCOL_VERSION 2)
 // Mirrors firmware/src/ble/protocol.h. All integers little-endian.
 import Foundation
 
 enum DashProtocol {
-    static let protocolVersion: UInt8 = 1
+    static let protocolVersion: UInt8 = 2
 
     enum UUIDs {
         static let service = "9A3F0001-6D2C-4C8A-9B4E-1F2E3D4C5B6A"
@@ -12,7 +12,8 @@ enum DashProtocol {
         static let meters = "9A3F0004-6D2C-4C8A-9B4E-1F2E3D4C5B6A"
         static let command = "9A3F0005-6D2C-4C8A-9B4E-1F2E3D4C5B6A"
         static let status = "9A3F0006-6D2C-4C8A-9B4E-1F2E3D4C5B6A"
-        static let meterMap = "9A3F0007-6D2C-4C8A-9B4E-1F2E3D4C5B6A"
+        static let slotNames = "9A3F0008-6D2C-4C8A-9B4E-1F2E3D4C5B6A"
+        static let fuelPrices = "9A3F0009-6D2C-4C8A-9B4E-1F2E3D4C5B6A"
     }
 
     enum Opcode: UInt8 {
@@ -26,11 +27,10 @@ enum DashProtocol {
     static let minutesCongestion: UInt8 = 0xFE
     static let minutesClosed: UInt8 = 0xFD
 
-    // Slot registry (slot -> LOCATION_ID, DESTINATION_ID)
-    static let slots: [(slot: UInt8, location: String, destination: String)] = [
+    // Fixed harbour slots 1-6; slots 7-9 user-configurable (SlotConfig)
+    static let fixedSlots: [(slot: UInt8, location: String, destination: String)] = [
         (1, "H2", "CH"), (2, "H2", "EH"), (3, "H2", "WH"),
         (4, "K03", "CH"), (5, "K03", "EH"), (6, "K03", "WH"),
-        (7, "SJ1", "LRT"), (8, "SJ2", "TCT"), (9, "SJ2", "TSCA"),
     ]
 
     struct JourneyEntry {
@@ -40,10 +40,11 @@ enum DashProtocol {
     }
 
     struct MeterGroup {
-        let name: String     // Chinese street name (Street_tc), ≤36 UTF-8 bytes on wire
+        let name: String     // Chinese street name (Street_tc)
         let distM: UInt16
         let vacant: UInt8
         let total: UInt8
+        let lpp: UInt8       // minutes 30/60/120, 0 unknown
     }
 
     struct DeviceStatus {
@@ -57,11 +58,12 @@ enum DashProtocol {
 
     // MARK: Encoders
 
-    static func encodeTimeSync(now: Date = Date(), todaySunPH: Bool, tomorrowSunPH: Bool) -> Data {
+    /// sunPHFlags bits 0-3: today / +1 / +2 / +3 days (HK local) use Sun/PH schedule.
+    static func encodeTimeSync(now: Date = Date(), sunPHFlags: UInt8) -> Data {
         var d = Data([protocolVersion])
         d.appendLE(UInt32(now.timeIntervalSince1970))
         d.appendLE(UInt16(bitPattern: 480))  // HK = UTC+8
-        d.append((todaySunPH ? 1 : 0) | (tomorrowSunPH ? 2 : 0))
+        d.append(sunPHFlags & 0x0F)
         return d
     }
 
@@ -87,8 +89,35 @@ enum DashProtocol {
             d.appendLE(g.distM)
             d.append(g.vacant)
             d.append(g.total)
+            d.append(g.lpp)
             d.append(UInt8(name.count))
             d.append(name)
+        }
+        return d
+    }
+
+    static func encodeSlotNames(_ names: [(slot: UInt8, name: String)]) -> Data {
+        var d = Data([protocolVersion])
+        let capped = names.prefix(12)
+        d.append(UInt8(capped.count))
+        for e in capped {
+            let name = Data(String(e.name.prefix(8)).utf8)  // ≤24 bytes
+            d.append(e.slot)
+            d.append(UInt8(name.count))
+            d.append(name)
+        }
+        return d
+    }
+
+    /// cents[brand][type], 5 brands × 3 types; nil → 0xFFFF.
+    static func encodeFuelPrices(fetchEpoch: UInt32, cents: [[UInt16?]]) -> Data {
+        var d = Data([protocolVersion])
+        d.appendLE(fetchEpoch)
+        for b in 0..<5 {
+            for t in 0..<3 {
+                let v = (b < cents.count && t < cents[b].count) ? (cents[b][t] ?? 0xFFFF) : 0xFFFF
+                d.appendLE(v)
+            }
         }
         return d
     }
@@ -104,7 +133,7 @@ enum DashProtocol {
     }
 }
 
-private extension Data {
+extension Data {
     mutating func appendLE(_ v: UInt32) {
         append(contentsOf: [UInt8(v & 0xFF), UInt8((v >> 8) & 0xFF),
                             UInt8((v >> 16) & 0xFF), UInt8((v >> 24) & 0xFF)])

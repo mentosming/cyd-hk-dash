@@ -10,10 +10,13 @@
 		08556CFE82755F10877AC989 /* JourneyTimeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C48680E3A4F029A146D239AA /* JourneyTimeService.swift */; };
 		316F33AC862B20EAA4E74E44 /* HolidayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 897615BEB58F551DE2EF6926 /* HolidayService.swift */; };
 		38AA8450EE4913F446855C8E /* MeterQueryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFA7EFFA05313BBD3064F4F3 /* MeterQueryService.swift */; };
+		5382A6484FE6DAE4DBC52980 /* FuelPriceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D31A8BD265957649527F3D3 /* FuelPriceService.swift */; };
 		5AA062F3C54C8CFA549C8792 /* TollEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = C210B8A767D9131C39A7C94A /* TollEngine.swift */; };
 		78884661AF1A759860C32223 /* DashProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBC496F783761514B9B976EE /* DashProtocol.swift */; };
 		820450DDB3F541DF66C51764 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2093C7A9A885CC86A4BC5810 /* ContentView.swift */; };
 		A636CA7535FA1E470C8D4BF2 /* DashCentral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50CBBFA3EA3F966D4C17335B /* DashCentral.swift */; };
+		A762EC5378CA689C11771D8D /* OperatingPeriod.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C133B1A6FB900095C199B32 /* OperatingPeriod.swift */; };
+		CC2ACAA42E395642DDBC5F71 /* SlotConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFE8F3C21624771482A18F49 /* SlotConfig.swift */; };
 		D9629DFDC066C6FE700FF8D0 /* TollEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0291793DFB3D0117ED940A /* TollEngineTests.swift */; };
 		D9F32D90FA4BBF7F8C9C2E61 /* MeterStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41D63F555B73458675E91F2D /* MeterStore.swift */; };
 		EF6AFE5453F928B5EBD700F3 /* DashCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66312A87AFC107E70D11D650 /* DashCoordinator.swift */; };
@@ -38,10 +41,13 @@
 		50CBBFA3EA3F966D4C17335B /* DashCentral.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashCentral.swift; sourceTree = "<group>"; };
 		59BB00F374C96B3EE4119325 /* CYDDashApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CYDDashApp.swift; sourceTree = "<group>"; };
 		66312A87AFC107E70D11D650 /* DashCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashCoordinator.swift; sourceTree = "<group>"; };
+		7D31A8BD265957649527F3D3 /* FuelPriceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FuelPriceService.swift; sourceTree = "<group>"; };
 		897615BEB58F551DE2EF6926 /* HolidayService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HolidayService.swift; sourceTree = "<group>"; };
+		9C133B1A6FB900095C199B32 /* OperatingPeriod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperatingPeriod.swift; sourceTree = "<group>"; };
 		C210B8A767D9131C39A7C94A /* TollEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TollEngine.swift; sourceTree = "<group>"; };
 		C48680E3A4F029A146D239AA /* JourneyTimeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyTimeService.swift; sourceTree = "<group>"; };
 		CC0291793DFB3D0117ED940A /* TollEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TollEngineTests.swift; sourceTree = "<group>"; };
+		CFE8F3C21624771482A18F49 /* SlotConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlotConfig.swift; sourceTree = "<group>"; };
 		DFA7EFFA05313BBD3064F4F3 /* MeterQueryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeterQueryService.swift; sourceTree = "<group>"; };
 		EBC496F783761514B9B976EE /* DashProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashProtocol.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -59,10 +65,13 @@
 		4F90579EF196F8984523E974 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				7D31A8BD265957649527F3D3 /* FuelPriceService.swift */,
 				897615BEB58F551DE2EF6926 /* HolidayService.swift */,
 				C48680E3A4F029A146D239AA /* JourneyTimeService.swift */,
 				DFA7EFFA05313BBD3064F4F3 /* MeterQueryService.swift */,
 				41D63F555B73458675E91F2D /* MeterStore.swift */,
+				9C133B1A6FB900095C199B32 /* OperatingPeriod.swift */,
+				CFE8F3C21624771482A18F49 /* SlotConfig.swift */,
 				C210B8A767D9131C39A7C94A /* TollEngine.swift */,
 			);
 			path = Services;
@@ -205,10 +214,13 @@
 				A636CA7535FA1E470C8D4BF2 /* DashCentral.swift in Sources */,
 				EF6AFE5453F928B5EBD700F3 /* DashCoordinator.swift in Sources */,
 				78884661AF1A759860C32223 /* DashProtocol.swift in Sources */,
+				5382A6484FE6DAE4DBC52980 /* FuelPriceService.swift in Sources */,
 				316F33AC862B20EAA4E74E44 /* HolidayService.swift in Sources */,
 				08556CFE82755F10877AC989 /* JourneyTimeService.swift in Sources */,
 				38AA8450EE4913F446855C8E /* MeterQueryService.swift in Sources */,
 				D9F32D90FA4BBF7F8C9C2E61 /* MeterStore.swift in Sources */,
+				A762EC5378CA689C11771D8D /* OperatingPeriod.swift in Sources */,
+				CC2ACAA42E395642DDBC5F71 /* SlotConfig.swift in Sources */,
 				5AA062F3C54C8CFA549C8792 /* TollEngine.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

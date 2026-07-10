@@ -36,3 +36,20 @@ Attribution required: data from DATA.GOV.HK / Transport Department.
 ## 3. HK public holidays
 
 - 1823 iCal JSON: `https://www.1823.gov.hk/common/ical/en.json` — cache locally, refresh yearly.
+
+## 4. Auto-fuel prices (Consumer Council 油價資訊通)
+
+- JSON: `https://www.consumer.org.hk/pricewatch/oilwatch/opendata/oilprice.json` (~1.3 KB)
+- Structure: `[{type: {en,tc,sc}, prices: [{vendor: {en,tc,sc}, price: "31.84"}]}]`
+- Types: Standard Petrol 無鉛 / Premium Petrol 特級無鉛 / Diesel 柴油
+- Vendors: Sinopec 中石化 / PetroChina 中國石油 / Caltex 加德士 / Esso 埃索 / Shell 蜆殼
+- Updated "as and when necessary" — fetch every ~6 h is plenty. Attribution: 消費者委員會.
+
+## Meters data quality notes (official spec)
+
+- `VehicleType`: `A` = private cars OK, `C` = coaches, `G` = goods vehicles → filter `A` only
+- `PoleId > 90000` = TD internal test meters (some geocoded in Paris/India!) → exclude
+- `OperatingPeriod` codes (A…T with 3A/4J/7J/5T variants) define paid hours and, for
+  `P` (Sundays) and `S` (Mon–Fri 08:00–17:00), explicit **no-parking** windows —
+  implemented in `ios-app/CYDDash/Services/OperatingPeriod.swift`
+- `LPP` = longest parking period (30/60/120 minutes)
