@@ -13,6 +13,8 @@ final class DashCoordinator: NSObject, ObservableObject {
     @Published var lastMetersPush: Date?
     @Published var logLines: [String] = []
     @Published var hasPairedDevice = false
+    @Published var needsPairing = false        // device asked us to present a token we lack
+    @Published var hasToken = PairingToken.isSet
 
     let central = DashCentral()
     let holidays = HolidayService()
@@ -48,8 +50,29 @@ final class DashCoordinator: NSObject, ObservableObject {
         hasPairedDevice = central.hasPairedDevice
     }
 
+    /// Handle a scanned QR deep link (cyddash://pair?t=…). Stores the token,
+    /// then connects (or re-authorises an existing connection).
+    func handlePairingURL(_ url: URL) {
+        guard let token = PairingToken.parse(url: url) else {
+            log("配對連結無效")
+            return
+        }
+        PairingToken.hex = token
+        hasToken = true
+        needsPairing = false
+        log("已由 QR 取得配對 token")
+        if central.isConnected {
+            central.writeAuthToken()  // re-authorise the live connection
+        } else {
+            central.startPairing()    // scan + connect; token written on discover
+        }
+        hasPairedDevice = central.hasPairedDevice
+    }
+
     func unpair() {
         central.forgetDevice()
+        PairingToken.hex = nil
+        hasToken = false
         hasPairedDevice = false
         connectionState = "未連接"
     }
@@ -192,6 +215,15 @@ extension DashCoordinator: DashCentralDelegate {
                 }
             case .fullResync:
                 pushTimeSyncAndJourney(force: true)
+            case .needPair:
+                // Device rejected our writes — we lack a valid token
+                if PairingToken.isSet {
+                    log("裝置要求重新授權")
+                    central.writeAuthToken()
+                } else {
+                    needsPairing = true
+                    log("未配對 — 請用相機掃描顯示屏 QR")
+                }
             }
         }
     }

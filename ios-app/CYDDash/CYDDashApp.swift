@@ -8,6 +8,9 @@ struct CYDDashApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(coordinator)
+                .onOpenURL { url in
+                    coordinator.handlePairingURL(url)
+                }
         }
     }
 }

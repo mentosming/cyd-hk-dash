@@ -25,6 +25,7 @@ final class DashCentral: NSObject {
     private var chrMeters: CBCharacteristic?
     private var chrSlotNames: CBCharacteristic?
     private var chrFuelPrices: CBCharacteristic?
+    private var chrAuth: CBCharacteristic?
     private var chrCommand: CBCharacteristic?
     private var chrStatus: CBCharacteristic?
     private var lastStatus: DashProtocol.DeviceStatus?
@@ -71,6 +72,7 @@ final class DashCentral: NSObject {
         case DashProtocol.UUIDs.meters: return chrMeters
         case DashProtocol.UUIDs.slotNames: return chrSlotNames
         case DashProtocol.UUIDs.fuelPrices: return chrFuelPrices
+        case DashProtocol.UUIDs.auth: return chrAuth
         default: return nil
         }
     }
@@ -134,7 +136,7 @@ extension DashCentral: CBCentralManagerDelegate {
                         error: Error?) {
         isConnected = false
         chrJourney = nil; chrTimeSync = nil; chrMeters = nil
-        chrSlotNames = nil; chrFuelPrices = nil
+        chrSlotNames = nil; chrFuelPrices = nil; chrAuth = nil
         chrCommand = nil; chrStatus = nil
         delegate?.dashCentralDisconnected(self)
         log("已斷線，重新排隊連接")
@@ -165,15 +167,31 @@ extension DashCentral: CBPeripheralDelegate {
             case DashProtocol.UUIDs.meters: chrMeters = chr
             case DashProtocol.UUIDs.slotNames: chrSlotNames = chr
             case DashProtocol.UUIDs.fuelPrices: chrFuelPrices = chr
+            case DashProtocol.UUIDs.auth: chrAuth = chr
             case DashProtocol.UUIDs.command:
                 chrCommand = chr
                 p.setNotifyValue(true, for: chr)
             case DashProtocol.UUIDs.status:
                 chrStatus = chr
-                p.readValue(for: chr)
             default: break
             }
         }
+        // Authorise FIRST (writes are FIFO, so this lands before any data
+        // write), then read Status to trigger the ready → push sequence.
+        writeAuthToken()
+        if let st = chrStatus { p.readValue(for: st) }
+    }
+
+    /// Write the stored pairing token to the Auth characteristic. No-op (but
+    /// logged) if the app hasn't been enrolled via the QR deep link yet.
+    func writeAuthToken() {
+        guard let token = PairingToken.data else {
+            log("未有配對 token — 請掃描顯示屏 QR")
+            return
+        }
+        guard let p = peripheral, let chr = chrAuth else { return }
+        p.writeValue(token, for: chr, type: .withResponse)
+        log("已提交配對 token")
     }
 
     func peripheral(_ p: CBPeripheral, didUpdateValueFor chr: CBCharacteristic, error: Error?) {

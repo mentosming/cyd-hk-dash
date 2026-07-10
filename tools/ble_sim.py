@@ -35,6 +35,7 @@ UUID_COMMAND = "9a3f0005-6d2c-4c8a-9b4e-1f2e3d4c5b6a"
 UUID_STATUS = "9a3f0006-6d2c-4c8a-9b4e-1f2e3d4c5b6a"
 UUID_SLOTNAMES = "9a3f0008-6d2c-4c8a-9b4e-1f2e3d4c5b6a"
 UUID_FUELPRICES = "9a3f0009-6d2c-4c8a-9b4e-1f2e3d4c5b6a"
+UUID_AUTH = "9a3f000a-6d2c-4c8a-9b4e-1f2e3d4c5b6a"
 
 JTI_URL = "https://resource.data.one.gov.hk/td/jss/Journeytimev2.xml"
 FUEL_URL = "https://www.consumer.org.hk/pricewatch/oilwatch/opendata/oilprice.json"
@@ -169,6 +170,7 @@ def fuel_payload(fake: bool) -> bytes:
 async def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--fake", action="store_true", help="use fake data, no network")
+    ap.add_argument("--token", help="pairing token hex (from the boot 'Pair URL' log or QR)")
     args = ap.parse_args()
 
     print("Scanning for CYD-DASH ...")
@@ -196,6 +198,15 @@ async def main():
                 loop.call_soon_threadsafe(wants_journey.set)
 
         await client.start_notify(UUID_COMMAND, on_command)
+
+        # App-layer auth: present the token BEFORE any data write, or the
+        # firmware (APP_TOKEN_REQUIRED) rejects everything and shows its QR.
+        if args.token:
+            await client.write_gatt_char(UUID_AUTH, bytes.fromhex(args.token), response=True)
+            print(f">> auth token ({len(args.token)//2} B)")
+        else:
+            print("!! no --token given; firmware will reject writes and show the QR")
+
         wants_journey.set()
 
         async def push_journey():

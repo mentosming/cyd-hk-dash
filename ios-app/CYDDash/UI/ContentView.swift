@@ -19,10 +19,16 @@ struct ContentView: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
+                    if coordinator.needsPairing || !coordinator.hasToken {
+                        Label("用相機 App 掃描顯示屏上嘅 QR 完成配對",
+                              systemImage: "qrcode.viewfinder")
+                            .font(.callout)
+                            .foregroundStyle(etollTeal)
+                    }
                     if coordinator.hasPairedDevice {
                         Button("取消配對", role: .destructive) { coordinator.unpair() }
                     } else {
-                        Button("配對 CYD-DASH") { coordinator.pair() }
+                        Button("連接 CYD-DASH") { coordinator.pair() }
                             .tint(etollTeal)
                     }
                 }

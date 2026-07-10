@@ -26,8 +26,24 @@ Base UUID: `9A3Fxxxx-6D2C-4C8A-9B4E-1F2E3D4C5B6A`
 | `0006`      | Status     | Read         | phone ← ESP | Status |
 | `0008`      | SlotNames  | Write        | phone → ESP | SlotNames |
 | `0009`      | FuelPrices | Write, Read  | phone → ESP | FuelPrices |
+| `000A`      | Auth       | Write(enc)   | phone → ESP | 8-byte pairing token |
 
 (`0007` was the v1 radar MeterMap — removed in v2.)
+
+## App-layer pairing (QR + token)
+
+On top of BLE bonding, data writes require an **app-layer token**. The device
+holds a random 8-byte token (NVS, regenerated when bonds are cleared) and shows
+it as an on-screen QR encoding a deep link:
+
+`cyddash://pair?t=<16 hex chars>&n=CYD-DASH`
+
+The phone scans it with the Camera app → the deep link opens CYDDash → the app
+stores the token and writes it to the **Auth** characteristic. Until a
+connection presents the correct token, the device ignores every data write and
+notifies opcode `0x04` (NEED_PAIR); the QR overlay is shown while connected but
+unauthorised (also togglable by tapping the on-screen BT dot). Set firmware
+`APP_TOKEN_REQUIRED 0` to disable.
 
 ## Payloads
 
@@ -131,8 +147,10 @@ Source: Consumer Council Oil Price Watch open data (list/pump prices).
 ## Connect sequence (phone side)
 
 1. Connect, discover service, subscribe to Command.
-2. Read Status → check `protocol_ver == 2` (mismatch: show update prompt, stop).
-3. Write TimeSync → fetch JTI XML → write Journey.
-4. Write FuelPrices (cached ok) and SlotNames (if configured).
-5. Handle notifies: `0x02` → journey if >110 s; meters auto-refresh if window open;
-   fuel if >6 h. `0x01` → meters flow.
+2. **Write the stored pairing token to Auth FIRST** (writes are FIFO, so it lands
+   before any data write). If no token stored, prompt the user to scan the QR.
+3. Read Status → check `protocol_ver == 2` (mismatch: show update prompt, stop).
+4. Write TimeSync → fetch JTI XML → write Journey.
+5. Write FuelPrices (cached ok) and SlotNames (if configured).
+6. Handle notifies: `0x02` → journey if >110 s; meters auto-refresh if window open;
+   fuel if >6 h. `0x01` → meters flow. `0x04` → (re)write token or prompt to scan QR.

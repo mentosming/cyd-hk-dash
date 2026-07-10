@@ -23,7 +23,7 @@
 /* Trim widgets we do not use */
 #define LV_USE_ANIMIMG 0
 #define LV_USE_CALENDAR 0
-#define LV_USE_CANVAS 0
+#define LV_USE_CANVAS 1  /* required by LV_USE_QRCODE */
 #define LV_USE_CHART 0
 #define LV_USE_CHECKBOX 0
 #define LV_USE_DROPDOWN 0
@@ -43,6 +43,9 @@
 
 #define LV_USE_THEME_DEFAULT 1
 #define LV_THEME_DEFAULT_DARK 1
+
+/* QR code widget for BLE pairing */
+#define LV_USE_QRCODE 1
 
 #define LV_USE_LOG 0
 

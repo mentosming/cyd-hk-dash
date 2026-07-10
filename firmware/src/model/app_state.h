@@ -24,8 +24,11 @@ struct AppState {
   // Link
   bool connected = false;
   bool subscribed = false;
+  bool authorized = false;  // app presented the correct pairing token
   // Non-zero while pairing: PIN the UI should display
   uint32_t showPasskey = 0;
+  // Force the QR pairing overlay open (long-press the BT dot)
+  bool forceQR = false;
 
   // Dirty flags set by BLE task, cleared by UI task
   volatile bool journeyDirty = false;

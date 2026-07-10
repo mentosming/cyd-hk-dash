@@ -6,6 +6,7 @@
 #include "../include/app_config.h"
 #include "ble/gatt_server.h"
 #include "model/app_state.h"
+#include "model/auth_token.h"
 #include "model/data_cache.h"
 #include "model/hk_clock.h"
 #include "ui/calibrate.h"
@@ -51,6 +52,7 @@ void setup() {
 
   appstate::begin();
   hkclock::begin();
+  authtoken::begin();
 
   smartdisplay_init();
   // esp32_smartdisplay does NOT install an LVGL tick source, so without this
@@ -64,6 +66,7 @@ void setup() {
   ui::init();
   datacache::begin();  // show last-known data immediately (greyed as stale)
   ble::begin();
+  log_i("Pair URL: %s", authtoken::pairUrl().c_str());  // also shown as on-screen QR
   log_i("Setup complete, free heap %u", (unsigned)ESP.getFreeHeap());
 }
 

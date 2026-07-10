@@ -18,5 +18,16 @@
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.kaming.cyddash.pair</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>cyddash</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

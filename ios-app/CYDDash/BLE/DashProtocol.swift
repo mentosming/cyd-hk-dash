@@ -14,12 +14,14 @@ enum DashProtocol {
         static let status = "9A3F0006-6D2C-4C8A-9B4E-1F2E3D4C5B6A"
         static let slotNames = "9A3F0008-6D2C-4C8A-9B4E-1F2E3D4C5B6A"
         static let fuelPrices = "9A3F0009-6D2C-4C8A-9B4E-1F2E3D4C5B6A"
+        static let auth = "9A3F000A-6D2C-4C8A-9B4E-1F2E3D4C5B6A"
     }
 
     enum Opcode: UInt8 {
         case metersRefresh = 0x01
         case journeyTick = 0x02
         case fullResync = 0x03
+        case needPair = 0x04  // connection unauthorised — present the pairing token / scan QR
     }
 
     // Journey minutes sentinels

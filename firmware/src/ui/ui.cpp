@@ -6,6 +6,7 @@
 #include "../ble/gatt_server.h"
 #include "../model/hk_clock.h"
 #include "calibrate.h"
+#include "pair_qr.h"
 #include "ui_internal.h"
 
 namespace ui {
@@ -47,9 +48,17 @@ void onTitleTap(lv_event_t*) { showPage(g_page + 1); }
 
 void onTitleLongPress(lv_event_t*) { calibrate::start(); }
 
-// Long-press the clock: forget all BLE bonds (admin escape hatch)
+// Long-press the clock: forget all BLE bonds + regenerate token (full reset)
 void onClockLongPress(lv_event_t*) {
   ble::clearBonds();
+}
+
+// Tap the BT dot toggles the pairing QR overlay (manual enrol / re-scan)
+void onBtDotTap(lv_event_t*) {
+  appstate::with([](AppState& s) {
+    s.forceQR = !s.forceQR;
+    s.linkDirty = true;
+  });
 }
 
 // Pairing PIN modal, driven by AppState.showPasskey
@@ -202,6 +211,10 @@ void init() {
   lv_obj_set_style_border_width(g_btDot, 0, 0);
   lv_obj_set_style_bg_color(g_btDot, C(COL_TEXT_DIM), 0);
   lv_obj_set_style_bg_opa(g_btDot, LV_OPA_COVER, 0);
+  // Enlarge the tap target and let it toggle the pairing QR
+  lv_obj_set_ext_click_area(g_btDot, 16);
+  lv_obj_add_flag(g_btDot, LV_OBJ_FLAG_CLICKABLE);
+  lv_obj_add_event_cb(g_btDot, onBtDotTap, LV_EVENT_CLICKED, nullptr);
 
   // ---- Pages ----
   g_pages[0] = pageHarbourCreate(scr);
@@ -247,8 +260,11 @@ void tick(const AppState& s) {
   }
 
   // Link state — conveyed by the header BT dot colour
+  // teal = authorised, amber = connected/pairing, grey = idle
   lv_obj_set_style_bg_color(
-      g_btDot, C(s.subscribed ? COL_ETOLL : (s.connected ? COL_AMBER : COL_TEXT_DIM)), 0);
+      g_btDot, C(s.authorized ? COL_ETOLL : (s.connected ? COL_AMBER : COL_TEXT_DIM)), 0);
+
+  pairQRUpdate(s);
 
   // Journey staleness
   bool haveJourney = s.journeyReceivedMs != 0;

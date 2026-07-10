@@ -5,6 +5,7 @@
 
 #include "../../include/app_config.h"
 #include "../model/app_state.h"
+#include "../model/auth_token.h"
 #include "../model/data_cache.h"
 #include "../model/hk_clock.h"
 #include "protocol.h"
@@ -17,10 +18,16 @@ NimBLECharacteristic* g_chrCommand = nullptr;
 NimBLECharacteristic* g_chrStatus = nullptr;
 volatile bool g_connected = false;
 volatile bool g_subscribed = false;
+volatile bool g_authorized = false;
 volatile uint16_t g_connHandle = 0;
 volatile bool g_kickedThisConn = false;
 volatile uint32_t g_subscribedAtMs = 0;
+volatile bool g_needPairSent = false;
 uint32_t g_lastJourneyTickMs = 0;
+
+// App-layer authorization gate. With APP_TOKEN_REQUIRED, data writes are
+// ignored until the phone presents the correct token on the Auth char.
+inline bool writeAllowed() { return !APP_TOKEN_REQUIRED || g_authorized; }
 
 // Decoded payloads are staged here (BLE host task) then pushed into appstate.
 proto::Journey g_stagedJourney;
@@ -65,6 +72,7 @@ void applySlotNames(AppState& s) {
 void applyLink(AppState& s) {
   s.connected = g_connected;
   s.subscribed = g_subscribed;
+  s.authorized = g_authorized;
   s.linkDirty = true;
 }
 
@@ -76,12 +84,15 @@ class ServerCB : public NimBLEServerCallbacks {
     g_connected = true;
     g_connHandle = info.getConnHandle();
     g_kickedThisConn = false;
+    g_authorized = false;
+    g_needPairSent = false;
     appstate::with(applyLink);
     log_i("BLE connected");
   }
   void onDisconnect(NimBLEServer*, NimBLEConnInfo&, int reason) override {
     g_connected = false;
     g_subscribed = false;
+    g_authorized = false;
     appstate::with(applyLink);
     appstate::with(clearPasskeyShown);
     log_i("BLE disconnected (reason %d), re-advertising", reason);
@@ -100,8 +111,28 @@ class ServerCB : public NimBLEServerCallbacks {
 #endif
 };
 
+void markAuthorized(AppState& s) {
+  s.authorized = true;
+  s.linkDirty = true;
+}
+
+class AuthCB : public NimBLECharacteristicCallbacks {
+  void onWrite(NimBLECharacteristic* chr, NimBLEConnInfo&) override {
+    NimBLEAttValue v = chr->getValue();
+    if (authtoken::matches(v.data(), v.length())) {
+      g_authorized = true;
+      appstate::with(markAuthorized);
+      log_i("Auth OK — writes authorised");
+    } else {
+      g_authorized = false;
+      log_w("Auth token mismatch (%d bytes)", v.length());
+    }
+  }
+};
+
 class JourneyCB : public NimBLECharacteristicCallbacks {
   void onWrite(NimBLECharacteristic* chr, NimBLEConnInfo&) override {
+    if (!writeAllowed()) return;
     NimBLEAttValue v = chr->getValue();
     if (proto::decodeJourney(v.data(), v.length(), g_stagedJourney)) {
       appstate::with(applyJourney);
@@ -114,6 +145,7 @@ class JourneyCB : public NimBLECharacteristicCallbacks {
 
 class TimeSyncCB : public NimBLECharacteristicCallbacks {
   void onWrite(NimBLECharacteristic* chr, NimBLEConnInfo&) override {
+    if (!writeAllowed()) return;
     NimBLEAttValue v = chr->getValue();
     proto::TimeSync ts;
     if (proto::decodeTimeSync(v.data(), v.length(), ts)) {
@@ -127,6 +159,7 @@ class TimeSyncCB : public NimBLECharacteristicCallbacks {
 
 class MetersCB : public NimBLECharacteristicCallbacks {
   void onWrite(NimBLECharacteristic* chr, NimBLEConnInfo&) override {
+    if (!writeAllowed()) return;
     NimBLEAttValue v = chr->getValue();
     if (proto::decodeMeters(v.data(), v.length(), g_stagedMeters)) {
       appstate::with(applyMeters);
@@ -141,6 +174,7 @@ class MetersCB : public NimBLECharacteristicCallbacks {
 
 class SlotNamesCB : public NimBLECharacteristicCallbacks {
   void onWrite(NimBLECharacteristic* chr, NimBLEConnInfo&) override {
+    if (!writeAllowed()) return;
     NimBLEAttValue v = chr->getValue();
     if (proto::decodeSlotNames(v.data(), v.length(), g_stagedSlotNames)) {
       appstate::with(applySlotNames);
@@ -154,6 +188,7 @@ class SlotNamesCB : public NimBLECharacteristicCallbacks {
 
 class FuelPricesCB : public NimBLECharacteristicCallbacks {
   void onWrite(NimBLECharacteristic* chr, NimBLEConnInfo&) override {
+    if (!writeAllowed()) return;
     NimBLEAttValue v = chr->getValue();
     if (proto::decodeFuelPrices(v.data(), v.length(), g_stagedFuel)) {
       appstate::with(applyFuel);
@@ -236,6 +271,9 @@ void begin() {
   svc->createCharacteristic(UUID_FUELPRICES, kWriteProps | NIMBLE_PROPERTY::READ)
       ->setCallbacks(&fuelCB);
 
+  static AuthCB authCB;
+  svc->createCharacteristic(UUID_AUTH, kWriteProps)->setCallbacks(&authCB);
+
   static CommandCB commandCB;
   g_chrCommand = svc->createCharacteristic(UUID_COMMAND,
                                            NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ);
@@ -262,6 +300,17 @@ void notifyCommand(uint8_t opcode) {
 
 void tick() {
   if (!g_subscribed) return;
+
+  // Not authorised yet: nudge the app to pair (once) and let the UI show the QR.
+  if (APP_TOKEN_REQUIRED && !g_authorized) {
+    if (!g_needPairSent && millis() - g_subscribedAtMs > 1500) {
+      g_needPairSent = true;
+      notifyCommand(CMD_NEED_PAIR);
+      log_i("Unauthorised connection — sent NEED_PAIR");
+    }
+    return;  // no journey tick / watchdog until authorised
+  }
+
   if (millis() - g_lastJourneyTickMs >= JOURNEY_TICK_MS) {
     g_lastJourneyTickMs = millis();
     notifyCommand(CMD_JOURNEY_TICK);
@@ -290,8 +339,9 @@ void tick() {
 bool isConnected() { return g_connected; }
 
 void clearBonds() {
-  log_w("Clearing all BLE bonds (user request)");
+  log_w("Clearing all BLE bonds + regenerating token (user request)");
   NimBLEDevice::deleteAllBonds();
+  authtoken::regenerate();  // old QR/token no longer valid
   if (g_connected && g_server) g_server->disconnect(g_connHandle);
 }
 

@@ -18,11 +18,18 @@
 #define UUID_STATUS     "9A3F0006-6D2C-4C8A-9B4E-1F2E3D4C5B6A"
 #define UUID_SLOTNAMES  "9A3F0008-6D2C-4C8A-9B4E-1F2E3D4C5B6A"
 #define UUID_FUELPRICES "9A3F0009-6D2C-4C8A-9B4E-1F2E3D4C5B6A"
+#define UUID_AUTH       "9A3F000A-6D2C-4C8A-9B4E-1F2E3D4C5B6A"
+
+// App-layer pairing token: scan the on-screen QR (deep link) to enrol the app.
+// Set to 0 to accept data writes without a token (open access).
+#define APP_TOKEN_REQUIRED 1
+#define PAIR_URL_SCHEME "cyddash"   // QR: cyddash://pair?t=<hex>&n=CYD-DASH
 
 // Command opcodes (ESP -> phone)
 #define CMD_METERS_REFRESH 0x01
 #define CMD_JOURNEY_TICK   0x02
 #define CMD_FULL_RESYNC    0x03
+#define CMD_NEED_PAIR      0x04  // connection not authorised — app should show/scan QR
 
 // Timings
 #define JOURNEY_TICK_MS      (120 * 1000UL)
