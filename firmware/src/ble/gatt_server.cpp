@@ -2,6 +2,8 @@
 
 #include <Arduino.h>
 #include <NimBLEDevice.h>
+#include <Preferences.h>
+#include <esp_random.h>
 
 #include "../../include/app_config.h"
 #include "../model/app_state.h"
@@ -231,19 +233,45 @@ class StatusCB : public NimBLECharacteristicCallbacks {
 
 }  // namespace
 
+// A stable static-random BLE address stored in NVS. Using our own address
+// (instead of the factory one that earlier bonded to phones) makes the device
+// look brand-new to any client carrying a stale bond — sidestepping the
+// CBError 14 "Peer removed pairing information" discovery/connect failures
+// without the user having to "Forget This Device".
+static void applyStaticAddress() {
+  uint8_t addr[6];
+  Preferences p;
+  p.begin("bleaddr", false);
+  if (p.getBytesLength("addr") == 6) {
+    p.getBytes("addr", addr, 6);
+  } else {
+    for (int i = 0; i < 6; i += 4) {
+      uint32_t r = esp_random();
+      memcpy(addr + i, &r, (i + 4 <= 6) ? 4 : (6 - i));
+    }
+    addr[5] |= 0xC0;  // static random: two MSBs of the MSB must be 1
+    p.putBytes("addr", addr, 6);
+  }
+  p.end();
+  NimBLEDevice::setOwnAddrType(BLE_OWN_ADDR_RANDOM);
+  NimBLEDevice::setOwnAddr(addr);
+}
+
 void begin() {
   NimBLEDevice::init(BLE_DEVICE_NAME);
+  applyStaticAddress();
   NimBLEDevice::setMTU(512);
   NimBLEDevice::setPower(ESP_PWR_LVL_P9);
 
 #if BLE_REQUIRE_BONDING
-  // "Just Works" bonding: iOS shows a simple Pair? dialog (no PIN). Passkey
-  // (DISPLAY_ONLY) pairing was tried first but iOS never surfaced the PIN
-  // dialog and SMP aborted with encrypted=0 — Just Works is the reliable path.
+  // "Just Works" bonding (no PIN). A client that reconnects with a stale bond
+  // re-bonds here, refreshing its keys — this self-heals the CBError 14
+  // "Peer removed pairing information" seen after security-setting changes.
   NimBLEDevice::setSecurityAuth(true, false, true);  // bond, no MITM, secure connections
   NimBLEDevice::setSecurityIOCap(BLE_HS_IO_NO_INPUT_OUTPUT);
   constexpr uint32_t kWriteProps = NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_ENC;
 #else
+  NimBLEDevice::setSecurityAuth(false, false, false);
   constexpr uint32_t kWriteProps = NIMBLE_PROPERTY::WRITE;
 #endif
 
@@ -285,11 +313,24 @@ void begin() {
 
   svc->start();
 
+  // Build the advertising data explicitly: the NAME goes in the primary
+  // advertising packet (so iOS shows it immediately in a scan) and the 128-bit
+  // service UUID goes in the scan response (it's 16 bytes and won't fit
+  // alongside the name in the 31-byte primary packet). The NimBLE default
+  // packet carried neither, so iOS saw the board as an unnamed device.
   NimBLEAdvertising* adv = NimBLEDevice::getAdvertising();
-  adv->addServiceUUID(UUID_SERVICE);
-  adv->setName(BLE_DEVICE_NAME);
+  NimBLEAdvertisementData advData;
+  advData.setFlags(BLE_HS_ADV_F_DISC_GEN | BLE_HS_ADV_F_BREDR_UNSUP);
+  advData.setName(BLE_DEVICE_NAME);
+  adv->setAdvertisementData(advData);
+
+  NimBLEAdvertisementData scanData;
+  scanData.setCompleteServices(NimBLEUUID(UUID_SERVICE));
+  adv->setScanResponseData(scanData);
+  adv->enableScanResponse(true);
+
   adv->start();
-  log_i("BLE advertising as %s", BLE_DEVICE_NAME);
+  log_i("BLE advertising as %s (name in adv, service in scan-rsp)", BLE_DEVICE_NAME);
 }
 
 void notifyCommand(uint8_t opcode) {

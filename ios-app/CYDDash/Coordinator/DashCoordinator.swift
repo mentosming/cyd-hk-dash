@@ -61,11 +61,11 @@ final class DashCoordinator: NSObject, ObservableObject {
         hasToken = true
         needsPairing = false
         log("已由 QR 取得配對 token")
-        if central.isConnected {
-            central.writeAuthToken()  // re-authorise the live connection
-        } else {
-            central.startPairing()    // scan + connect; token written on discover
-        }
+        // Ensure a connection (uses retrieve-not-scan so it works even when the
+        // device is already bonded/connected); token is written on discovery,
+        // and immediately if the link is already up.
+        central.ensureConnected()
+        central.writeAuthToken()
         hasPairedDevice = central.hasPairedDevice
     }
 

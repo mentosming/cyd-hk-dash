@@ -50,7 +50,9 @@ void build() {
 void pairQRInit() {}
 
 void pairQRUpdate(const AppState& s) {
-  bool show = s.forceQR || (s.connected && !s.authorized && APP_TOKEN_REQUIRED);
+  // Show the QR whenever not yet authorised so the user can always scan it to
+  // pair; it hides automatically once the app presents a valid token.
+  bool show = s.forceQR || (APP_TOKEN_REQUIRED && !s.authorized);
   if (show && g_overlay == nullptr) {
     build();
   } else if (!show && g_overlay != nullptr) {

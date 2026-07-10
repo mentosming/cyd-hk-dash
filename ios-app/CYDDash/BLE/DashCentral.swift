@@ -15,7 +15,6 @@ protocol DashCentralDelegate: AnyObject {
 final class DashCentral: NSObject {
     weak var delegate: DashCentralDelegate?
 
-    private static let restoreID = "CYDDashCentral"
     private static let savedPeripheralKey = "savedPeripheralUUID"
 
     private var central: CBCentralManager!
@@ -37,16 +36,21 @@ final class DashCentral: NSObject {
 
     override init() {
         super.init()
-        central = CBCentralManager(
-            delegate: self, queue: nil,
-            options: [CBCentralManagerOptionRestoreIdentifierKey: Self.restoreID])
+        // No state restoration for now — a restored, stale peripheral (to a
+        // board that has since reset) confused the connection state machine.
+        // Foreground scan-by-name is reliable; background reconnect can be
+        // layered back on once this is solid.
+        central = CBCentralManager(delegate: self, queue: nil)
     }
 
-    /// First-time pairing: scan for the CYD-DASH service.
+    /// Scan for the device by name. Scanning with nil services (then filtering
+    /// on the local name) is more reliable than a 128-bit service-UUID filter,
+    /// which iOS may miss when the UUID sits in the scan response.
     func startPairing() {
-        guard central.state == .poweredOn else { return }
+        guard central.state == .poweredOn, !central.isScanning else { return }
         log("掃描 CYD-DASH…")
-        central.scanForPeripherals(withServices: [CBUUID(string: DashProtocol.UUIDs.service)])
+        central.scanForPeripherals(withServices: nil,
+                                   options: [CBCentralManagerScanOptionAllowDuplicatesKey: false])
     }
 
     func forgetDevice() {
@@ -77,20 +81,44 @@ final class DashCentral: NSObject {
         }
     }
 
-    private func reconnectSavedPeripheral() {
-        guard let idString = UserDefaults.standard.string(forKey: Self.savedPeripheralKey),
-              let id = UUID(uuidString: idString) else { return }
-        if let p = central.retrievePeripherals(withIdentifiers: [id]).first {
-            connect(p)
+    /// Ensure we're connected + discovered. Uses a background pending-connect
+    /// to the known peripheral (for auto-reconnect when the car powers up) AND
+    /// a name-filtered scan in parallel — the scan catches the case where the
+    /// peripheral identifier changed (e.g. after bonds were cleared).
+    func ensureConnected() {
+        guard central.state == .poweredOn else { return }
+        if let p = peripheral, p.state == .connected, chrAuth != nil {
+            return  // genuinely connected + discovered
+        }
+        // Adopt a live OS-level connection to our service if one exists…
+        let svc = CBUUID(string: DashProtocol.UUIDs.service)
+        if let p = central.retrieveConnectedPeripherals(withServices: [svc]).first {
+            log("採用已連接嘅 CYD-DASH")
+            adoptAndConnect(p)
+            return
+        }
+        // …otherwise scan by name.
+        startPairing()
+    }
+
+    /// Adopt a peripheral and make sure it's connected & (re)discovered.
+    private func adoptAndConnect(_ p: CBPeripheral) {
+        peripheral = p
+        p.delegate = self
+        switch p.state {
+        case .connected:
+            isConnected = true
+            log("已連接，發現服務中…")
+            p.discoverServices([CBUUID(string: DashProtocol.UUIDs.service)])
+        case .connecting:
+            break  // already in progress — don't stack connect() calls
+        default:
+            log("connect() 已排隊（iOS 會喺裝置出現時完成）")
+            central.connect(p)
         }
     }
 
-    private func connect(_ p: CBPeripheral) {
-        peripheral = p
-        p.delegate = self
-        log("connect() 已排隊（iOS 會喺裝置出現時完成）")
-        central.connect(p)  // pending connect never times out
-    }
+    private func connect(_ p: CBPeripheral) { adoptAndConnect(p) }
 
     private func log(_ s: String) { delegate?.dashCentral(self, log: s) }
 }
@@ -100,34 +128,33 @@ extension DashCentral: CBCentralManagerDelegate {
         switch central.state {
         case .poweredOn:
             log("藍牙就緒")
-            if peripheral == nil { reconnectSavedPeripheral() }
+            ensureConnected()
         case .unauthorized: log("藍牙權限被拒")
         case .poweredOff: log("藍牙已關閉")
         default: break
         }
     }
 
-    func centralManager(_ central: CBCentralManager,
-                        willRestoreState dict: [String: Any]) {
-        // Relaunched in the background by a BLE event: re-adopt the peripheral.
-        if let restored = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral],
-           let p = restored.first {
-            peripheral = p
-            p.delegate = self
-            log("背景喚醒，恢復連接 \(p.identifier.uuidString.prefix(8))")
-        }
-    }
-
     func centralManager(_ central: CBCentralManager, didDiscover p: CBPeripheral,
                         advertisementData: [String: Any], rssi RSSI: NSNumber) {
+        let advName = (advertisementData[CBAdvertisementDataLocalNameKey] as? String) ?? p.name
+        let svcs = (advertisementData[CBAdvertisementDataServiceUUIDsKey] as? [CBUUID]) ?? []
+        log("見到裝置 name=\(advName ?? "?") rssi=\(RSSI) svcs=\(svcs.count)")
+        let byName = advName?.contains("CYD-DASH") ?? false
+        let byUUID = svcs.contains(CBUUID(string: DashProtocol.UUIDs.service))
+        guard byName || byUUID else { return }
         central.stopScan()
         UserDefaults.standard.set(p.identifier.uuidString, forKey: Self.savedPeripheralKey)
-        log("搵到 CYD-DASH，配對中…")
-        connect(p)
+        log("搵到 CYD-DASH，連接中…")
+        adoptAndConnect(p)
     }
 
     func centralManager(_ central: CBCentralManager, didConnect p: CBPeripheral) {
         isConnected = true
+        peripheral = p
+        p.delegate = self
+        if central.isScanning { central.stopScan() }
+        UserDefaults.standard.set(p.identifier.uuidString, forKey: Self.savedPeripheralKey)
         log("已連接，發現服務中…")
         p.discoverServices([CBUUID(string: DashProtocol.UUIDs.service)])
     }
@@ -139,8 +166,8 @@ extension DashCentral: CBCentralManagerDelegate {
         chrSlotNames = nil; chrFuelPrices = nil; chrAuth = nil
         chrCommand = nil; chrStatus = nil
         delegate?.dashCentralDisconnected(self)
-        log("已斷線，重新排隊連接")
-        connect(p)  // immediately re-queue; completes on next power-up
+        log("已斷線，重新掃描連接")
+        startPairing()
     }
 
     func centralManager(_ central: CBCentralManager, didFailToConnect p: CBPeripheral,

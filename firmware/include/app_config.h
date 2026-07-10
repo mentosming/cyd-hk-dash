@@ -6,8 +6,10 @@
 
 // BLE
 #define BLE_DEVICE_NAME      "CYD-DASH"
-// Bonding: writes require encryption; pairing PIN is shown on screen.
-// Set to 0 to revert to open access (no re-pairing needed after flashing).
+// Just Works bonding. Clients that kept a stale bond (from earlier firmware)
+// otherwise fail to connect with CBError 14 "Peer removed pairing information";
+// re-bonding on connect self-heals their record. The app-layer token
+// (APP_TOKEN_REQUIRED) is the actual write authorisation.
 #define BLE_REQUIRE_BONDING 1
 #define BLE_PASSKEY 924031
 #define UUID_SERVICE   "9A3F0001-6D2C-4C8A-9B4E-1F2E3D4C5B6A"
