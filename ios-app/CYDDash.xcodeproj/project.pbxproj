@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		08556CFE82755F10877AC989 /* JourneyTimeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C48680E3A4F029A146D239AA /* JourneyTimeService.swift */; };
+		1CCC639E2446AC72FF6B00F8 /* QRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49DFA616AF13BEEFC5C0198D /* QRScannerView.swift */; };
 		316F33AC862B20EAA4E74E44 /* HolidayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 897615BEB58F551DE2EF6926 /* HolidayService.swift */; };
 		38AA8450EE4913F446855C8E /* MeterQueryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFA7EFFA05313BBD3064F4F3 /* MeterQueryService.swift */; };
 		5382A6484FE6DAE4DBC52980 /* FuelPriceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D31A8BD265957649527F3D3 /* FuelPriceService.swift */; };
@@ -39,6 +40,7 @@
 		16CC9444875D557728A5809A /* CYDDashTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = CYDDashTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2093C7A9A885CC86A4BC5810 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		41D63F555B73458675E91F2D /* MeterStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeterStore.swift; sourceTree = "<group>"; };
+		49DFA616AF13BEEFC5C0198D /* QRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerView.swift; sourceTree = "<group>"; };
 		50CBBFA3EA3F966D4C17335B /* DashCentral.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashCentral.swift; sourceTree = "<group>"; };
 		59BB00F374C96B3EE4119325 /* CYDDashApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CYDDashApp.swift; sourceTree = "<group>"; };
 		5BE5A9DF7ACAC681394A413D /* PairingToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PairingToken.swift; sourceTree = "<group>"; };
@@ -130,6 +132,7 @@
 			isa = PBXGroup;
 			children = (
 				2093C7A9A885CC86A4BC5810 /* ContentView.swift */,
+				49DFA616AF13BEEFC5C0198D /* QRScannerView.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -224,6 +227,7 @@
 				D9F32D90FA4BBF7F8C9C2E61 /* MeterStore.swift in Sources */,
 				A762EC5378CA689C11771D8D /* OperatingPeriod.swift in Sources */,
 				BC50C7518E1D2895910BCBED /* PairingToken.swift in Sources */,
+				1CCC639E2446AC72FF6B00F8 /* QRScannerView.swift in Sources */,
 				CC2ACAA42E395642DDBC5F71 /* SlotConfig.swift in Sources */,
 				5AA062F3C54C8CFA549C8792 /* TollEngine.swift in Sources */,
 			);

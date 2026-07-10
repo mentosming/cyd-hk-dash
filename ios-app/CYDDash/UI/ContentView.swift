@@ -4,6 +4,7 @@ private let etollTeal = Color(red: 0x18 / 255, green: 0xAD / 255, blue: 0x8E / 2
 
 struct ContentView: View {
     @EnvironmentObject var coordinator: DashCoordinator
+    @State private var showScanner = false
 
     var body: some View {
         NavigationStack {
@@ -20,16 +21,21 @@ struct ContentView: View {
                             .foregroundStyle(.secondary)
                     }
                     if coordinator.needsPairing || !coordinator.hasToken {
-                        Label("用相機 App 掃描顯示屏上嘅 QR 完成配對",
-                              systemImage: "qrcode.viewfinder")
+                        Text("撳下面掃描顯示屏上嘅 QR 完成配對")
                             .font(.callout)
-                            .foregroundStyle(etollTeal)
+                            .foregroundStyle(.secondary)
                     }
+                    Button {
+                        showScanner = true
+                    } label: {
+                        Label(coordinator.hasToken ? "重新掃描配對 QR" : "掃描配對 QR",
+                              systemImage: "qrcode.viewfinder")
+                    }
+                    .tint(etollTeal)
                     if coordinator.hasPairedDevice {
                         Button("取消配對", role: .destructive) { coordinator.unpair() }
                     } else {
                         Button("連接 CYD-DASH") { coordinator.pair() }
-                            .tint(etollTeal)
                     }
                 }
 
@@ -69,6 +75,24 @@ struct ContentView: View {
             .navigationTitle("CYD-DASH")
             .onAppear {
                 coordinator.meterQuery.requestPermissions()
+            }
+            .sheet(isPresented: $showScanner) {
+                NavigationStack {
+                    QRScannerView { scanned in
+                        showScanner = false
+                        if let url = URL(string: scanned) {
+                            coordinator.handlePairingURL(url)
+                        }
+                    }
+                    .ignoresSafeArea()
+                    .navigationTitle("掃描配對 QR")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("取消") { showScanner = false }
+                        }
+                    }
+                }
             }
         }
     }
