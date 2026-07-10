@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>bluetooth-central</string>
+	</array>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>連接車內 CYD-DASH 顯示屏推送隧道及咪錶數據</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>搜尋你附近嘅咪錶空位（掃一掃需要背景定位）</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>搜尋你附近嘅咪錶空位</string>
+	<key>UILaunchScreen</key>
+	<dict/>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+	</array>
+</dict>
+</plist>

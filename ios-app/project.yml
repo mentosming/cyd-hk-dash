@@ -1,0 +1,32 @@
+name: CYDDash
+options:
+  bundleIdPrefix: com.kaming
+  deploymentTarget:
+    iOS: "17.0"
+targets:
+  CYDDash:
+    type: application
+    platform: iOS
+    sources:
+      - path: CYDDash
+        excludes: [Info.plist]
+    settings:
+      base:
+        INFOPLIST_FILE: CYDDash/Info.plist
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.kaming.cyddash
+        MARKETING_VERSION: "0.1"
+        CURRENT_PROJECT_VERSION: 1
+        TARGETED_DEVICE_FAMILY: "1"
+        SWIFT_VERSION: "5.9"
+        DEVELOPMENT_TEAM: A7YC2GSU54
+        CODE_SIGN_STYLE: Automatic
+  CYDDashTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources: [CYDDashTests]
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+    dependencies:
+      - target: CYDDash
