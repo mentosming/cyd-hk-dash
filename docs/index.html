@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CYD-DASH · 香港車載儀錶板</title>
+<meta name="description" content="用瀏覽器一鍵燒錄 ESP32 車載顯示屏 — 香港過海隧道行車時間、時變收費、咪錶空位、油價。開源。">
+<script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+<style>
+  :root {
+    --teal: #18AD8E; --teal-dk: #0F8A70;
+    --bg: #0B0F14; --card: #161D26; --line: #232C38;
+    --tx: #F2F5F8; --dim: #8A97A5;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--tx);
+    font: 16px/1.65 -apple-system, "Noto Sans TC", "PingFang HK", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 56px 22px 80px; }
+  header { text-align: center; margin-bottom: 44px; }
+  .badge {
+    display: inline-block; font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--teal); border: 1px solid var(--teal); border-radius: 999px;
+    padding: 4px 12px; margin-bottom: 18px;
+  }
+  h1 { font-size: 40px; line-height: 1.15; margin: 0 0 12px; letter-spacing: -.02em; }
+  h1 .accent { color: var(--teal); }
+  .sub { color: var(--dim); font-size: 17px; margin: 0 auto; max-width: 30em; }
+
+  .install {
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+    padding: 28px; text-align: center; margin: 36px 0;
+  }
+  .install h2 { margin: 0 0 6px; font-size: 20px; }
+  .install p { color: var(--dim); font-size: 14px; margin: 0 0 20px; }
+  esp-web-install-button { --esp-tools-button-color: #fff; }
+  esp-web-install-button button, .btn {
+    background: var(--teal); color: #fff; border: 0; border-radius: 999px;
+    padding: 13px 30px; font-size: 16px; font-weight: 600; cursor: pointer;
+    font-family: inherit;
+  }
+  esp-web-install-button button:hover, .btn:hover { background: var(--teal-dk); }
+  .unsupported { color: #FFB020; font-size: 14px; }
+  .unsupported a { color: var(--teal); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 36px 0; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
+  .card h3 { margin: 0 0 6px; font-size: 15px; color: var(--teal); }
+  .card p { margin: 0; font-size: 14px; color: var(--dim); }
+
+  ol { padding-left: 22px; }
+  ol li { margin-bottom: 14px; }
+  code {
+    background: var(--card); border: 1px solid var(--line); border-radius: 5px;
+    padding: 2px 6px; font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  h2.sec { font-size: 22px; margin: 44px 0 14px; }
+  a { color: var(--teal); }
+  footer {
+    margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--line);
+    color: var(--dim); font-size: 13px; text-align: center;
+  }
+  .warn { color: #8A97A5; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="badge">開源 · GPL-3.0</div>
+    <h1>CYD-<span class="accent">DASH</span></h1>
+    <p class="sub">香港車載儀錶板。一塊 ~HK$80 嘅 ESP32 屏，插車 USB，即刻睇到過海隧道行車時間、現時時段收費、附近咪錶空位同油價。</p>
+  </header>
+
+  <div class="grid">
+    <div class="card"><h3>過海隧道</h3><p>紅隧 / 東隧 / 西隧 雙向實時行車時間，加現時時段收費同下次轉價倒數。</p></div>
+    <div class="card"><h3>主要幹道</h3><p>獅隧、大老山、青沙、屯赤、將隧⋯ 三條路線任你揀。</p></div>
+    <div class="card"><h3>附近咪錶</h3><p>撳一下，搵到 4 公里內有空位、而家准泊嘅街道。</p></div>
+    <div class="card"><h3>油價</h3><p>消委會五間油公司牌價，最平自動高亮。</p></div>
+  </div>
+
+  <div class="install">
+    <h2>⚡ 一鍵燒錄</h2>
+    <p>插咗 ESP32 落 USB，撳個掣就搞掂。唔使裝任何軟件。</p>
+    <esp-web-install-button manifest="firmware/manifest.json">
+      <button slot="activate">燒錄 firmware</button>
+      <span slot="unsupported" class="unsupported">
+        呢個瀏覽器唔支援 Web Serial。請用 <b>Chrome</b>、<b>Edge</b> 或 <b>Firefox 151+</b>（桌面版）。Safari 唔支援。
+      </span>
+      <span slot="not-allowed" class="unsupported">要喺 HTTPS 網頁先用得。</span>
+    </esp-web-install-button>
+  </div>
+
+  <h2 class="sec">你需要咩</h2>
+  <ol>
+    <li><b>ESP32-2432S028R</b>（俗稱 Cheap Yellow Display / CYD，2.8" 320×240 觸控屏）—— 淘寶 / AliExpress 搜型號，約 HK$60–90。
+      <br><span class="warn">⚠️ 要單 micro-USB 嘅 ILI9341 版本；雙 USB 嘅 v2/v3（ST7789）暫未支援。</span></li>
+    <li>一條 <b>micro-USB 線</b>（燒錄用）+ 車上 5V USB 供電</li>
+    <li>一部 <b>iPhone</b>（iOS 17+）裝 <b>HK CarDash</b> app</li>
+  </ol>
+
+  <h2 class="sec">點裝</h2>
+  <ol>
+    <li>上面撳「<b>燒錄 firmware</b>」→ 揀 serial port → 等 30 秒</li>
+    <li>iPhone 裝 <b>HK CarDash</b>（App Store 上架中）</li>
+    <li>屏幕會出一個 <b>QR</b> → App 撳「掃描配對 QR」→ 掃 → 完</li>
+  </ol>
+  <p class="warn">之後每次上車自動連接，唔使再掃。顯示屏本身零上網 —— 手機負責攞數據同定位，經藍牙推細 payload 上屏。</p>
+
+  <h2 class="sec">數據來源</h2>
+  <p class="warn">
+    行車時間、咪錶分佈與佔用：<b>運輸署</b>（DATA.GOV.HK）· 車用燃油牌價：<b>消費者委員會</b>「油價資訊通」· 公眾假期：<b>1823</b>。<br>
+    本項目與運輸署、消委會或任何政府機構<b>無關</b>。數據僅供參考，駕駛時請以路面實際情況同官方指示為準。
+  </p>
+
+  <footer>
+    <a href="https://github.com/mentosming/cyd-hk-dash">GitHub</a> ·
+    <a href="privacy.html">私隱政策</a> ·
+    firmware GPL-3.0 / iOS app MIT
+  </footer>
+
+</div>
+</body>
+</html>

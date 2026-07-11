@@ -1,90 +1,97 @@
-# CYD-DASH — 香港車載儀錶板
+<div align="center">
 
-ESP32-2432S028R（"Cheap Yellow Display"，2.8" 320×240 觸控 TFT）車載顯示屏（協議 **v2**）：
+# CYD-DASH · 香港車載儀錶板
 
-- **過海隧道**：紅隧/東隧/西隧 雙向實時行車時間（連 ↑↓ 升跌箭咀）+ 現時時段收費（易通行風格 teal pill，連下次轉價倒數）
-- **主要幹道**：三條自選路線（app 設定頁揀，預設獅隧/大老山/青沙）
-- **附近咪錶**：撳「掃一掃」，用手機 GPS 喺 4 公里內搜尋**有空位、而家准泊**嘅街道（只計私家車位、依官方准泊時段表、排除測試錶），列最近 4 條連最長可泊時間；掃完 10 分鐘內自動更新
-- **油價**：消委會五間油公司（中石化/中國石油/加德士/埃索/蜆殼）× 無鉛/特級/柴油牌價，每欄最平 teal 高亮
-- **配對**：掃描顯示屏 QR（相機 App）→ 深層連結開 app → 自動連接 + 授權。QR 內含裝置隨機 token，之後每次連接 app 都要出示 token 先寫得到數據（app 層授權，疊喺 BLE bonding 之上）
-- **可靠性**：NVS cache 開機即顯示上次數據、斷線自癒 watchdog、BLE bonding、LDR 光感 + 時間雙重自動調光、長按標題入 3 點觸控校準、長按時鐘清除配對兼重設 token、撳 BT 點顯示配對 QR
+**A Hong Kong car dashboard on a $10 ESP32 display — tunnel journey times, live time-varying tolls, nearby parking-meter vacancies and pump prices.**
 
-ESP32 冇辦法經藍牙上網（無 PAN profile），所以架構係 **iPhone companion app 做 BLE bridge**：
-ESP32 長開 BLE 廣播（`CYD-DASH`）→ 上車後 iPhone 喺背景自動重連 →
-手機上網攞 data.gov.hk 數據 → 推壓縮 payload（≤180 bytes）俾 ESP32 顯示。
+[**⚡ Flash it from your browser**](https://mentosming.github.io/cyd-hk-dash/) · [Protocol](docs/ble-protocol.md) · [Data sources](docs/data-sources.md)
+
+</div>
+
+---
+
+香港駕駛者嘅車載顯示屏。一塊 ~HK$80 嘅 ESP32 屏,插車 USB,就有:
+
+| | |
+|---|---|
+| **過海隧道** | 紅隧 / 東隧 / 西隧 雙向實時行車時間（連 ↑↓ 升跌）+ **現時時段收費**同下次轉價倒數 |
+| **主要幹道** | 三條自選路線（獅隧 / 大老山 / 青沙 / 屯赤 / 將隧…）實時行車時間 |
+| **附近咪錶** | 撳「掃一掃」→ 手機 GPS 喺 4 公里內搵**有空位、而家准泊**嘅街道（只計私家車位、依官方准泊時段）|
+| **油價** | 消委會五間油公司（中石化 / 中國石油 / 加德士 / 埃索 / 蜆殼）× 無鉛 / 特級 / 柴油，最平自動高亮 |
+
+## 點解要部手機？
+
+ESP32 嘅藍牙冇 PAN profile，上唔到網。所以架構係 **iPhone 做橋**：
 
 ```
-┌─────────────┐  BLE GATT   ┌──────────────┐  HTTPS   ┌──────────────────┐
-│  ESP32 CYD   │◄──────────►│ iPhone        │◄────────►│ data.gov.hk      │
-│  LVGL 9 UI   │  ≤180 B    │ CYDDash app   │          │ 運輸署 JTI XML    │
-│  NimBLE      │  payloads  │ (背景 BLE)     │          │ 咪錶 CSV / 1823 PH│
-└─────────────┘             └──────────────┘          └──────────────────┘
+ESP32 (LVGL + NimBLE)  ←── BLE GATT (≤180 B) ──→  iPhone App  ←── HTTPS ──→  data.gov.hk / 消委會
+   顯示 + 觸控                                     上網 + GPS + 解析
 ```
 
-## 結構
+顯示屏零上網、零帳戶；手機負責攞數據（運輸署行車時間、咪錶佔用、消委會油價）同定位，然後推壓縮好嘅細 payload 上屏。上車自動連，落車自動斷。
 
-| 路徑 | 內容 |
-|------|------|
-| `docs/ble-protocol.md` | **協議規範**（UUID、payload byte layout、slot registry）— 兩邊實現以此為準 |
-| `docs/data-sources.md` | 數據源 URL、欄位、quirks（CSV header 喺第 3 行等） |
-| `docs/toll-schedule.md` | 官方時變收費表 + 共用測試向量 |
-| `firmware/` | PlatformIO + Arduino + LVGL 9（esp32_smartdisplay）+ NimBLE |
-| `ios-app/` | SwiftUI companion app（xcodegen 生成 project） |
-| `tools/ble_sim.py` | 用 Mac 藍牙模擬手機，推實時/假數據入板測試 |
-| `tools/fetch_check.sh` | 檢查三個 data.gov.hk endpoint |
+## 你需要咩
 
-## Firmware：build + 燒錄
+1. **一塊 ESP32-2432S028R**（俗稱「Cheap Yellow Display」/ CYD，2.8" 320×240 觸控屏）— 淘寶 / AliExpress 搜 `ESP32-2432S028R`，約 HK$60–90
+2. **一條 USB-A → micro-USB 線**（燒錄用）+ 車上 5V USB 供電
+3. **一部 iPhone**（iOS 17+）
+
+> 注意：市面有 v2/v3 雙 USB 版本（ST7789 屏），本 firmware 針對單 micro-USB 嘅 **ILI9341** 版本。
+
+## 安裝（3 步）
+
+### 1️⃣ 燒錄 firmware — 唔使裝任何嘢
+
+用 **Chrome / Edge / Firefox 151+**（Safari 唔支援 Web Serial）開：
+
+### 👉 **https://mentosming.github.io/cyd-hk-dash/**
+
+插 USB → 撳「Install」→ 揀個 serial port → 等 30 秒。搞掂。
+
+### 2️⃣ 裝手機 App
+
+App Store 搜 **HK CarDash**（上架中）。或者自己 build：
+
+```bash
+cd ios-app && xcodegen generate && open CYDDash.xcodeproj
+```
+
+### 3️⃣ 掃 QR 配對
+
+屏幕會顯示一個 QR → App 撳「掃描配對 QR」→ 掃 → 完。
+
+之後每次上車自動連接，唔使再掃。
+
+## 自己 build firmware
 
 ```bash
 brew install platformio
 cd firmware
-pio test -e native            # toll engine 單元測試（唔使插板）
-pio run -e cyd -t upload      # build + 燒錄（port 已設做 /dev/cu.usbserial-11420）
+pio run -e cyd -t upload            # build + 燒錄
+pio test -e native                  # 收費引擎單元測試
+pio device monitor -b 115200
 ```
 
-螢幕操作：左右掃 / 撳標題換頁；咪錶頁撳「掃一掃」。
-夜間（19:30–07:00）背光自動調暗至 25%，觸摸恢復 30 秒。
+隱藏操作：長按標題 = 3 點觸控校準 · 長按時鐘 = 清除配對兼重生 token · 撳右上藍牙點 = 叫出配對 QR
 
-## 端到端測試（未有 iPhone app 都得）
+## 開發
 
-```bash
-uv run --with bleak --with requests python tools/ble_sim.py         # 實時政府數據
-uv run --with bleak --with requests python tools/ble_sim.py --fake  # 離線假數據
-```
+架構、build 指令、同踩過嘅坑（LVGL tick、CRLF CSV、BLE stale bond…）全部喺 [CLAUDE.md](CLAUDE.md)。BLE 協議規範喺 [docs/ble-protocol.md](docs/ble-protocol.md)。
 
-## iOS app
+歡迎 PR — 見 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
-```bash
-cd ios-app
-xcodegen generate
-open CYDDash.xcodeproj   # 揀你嘅 signing team，裝落真機（Simulator 冇藍牙）
-```
+## 數據來源與鳴謝
 
-首次用：開 app → 「配對 CYD-DASH」→ 俾藍牙 + 定位（Always）權限。
-之後每次上車 iOS 會自動背景重連（force-quit 或重啟手機後要手動開返 app 一次）。
+- 行車時間、咪錶分佈與佔用：**運輸署** via [DATA.GOV.HK](https://data.gov.hk)
+- 車用燃油牌價：**消費者委員會**「油價資訊通」
+- 公眾假期：**1823**
+- 時變收費表：**運輸署**（本地計算，唔使 API）
 
-跑測試：`xcodebuild -project CYDDash.xcodeproj -scheme CYDDash -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test`
+## 授權
 
-## 已知限制
+| 部分 | 授權 |
+|---|---|
+| `firmware/`, `tools/`, `docs/` | **GPL-3.0** — 改咗要開返源，防止有人攞去閉源賣硬件 |
+| `ios-app/` | **MIT** — GPL 同 App Store 條款唔相容（[FSF 立場](https://www.fsf.org/blogs/licensing/more-about-the-app-store-gpl-enforcement)、VLC 曾被落架），所以 App 部分用寬鬆授權 |
 
-- iOS 背景 BLE 係 best-effort：force-quit / 重啟後要開返 app；咪錶 700KB fetch 喺弱網背景下可能超時（會喺下一個 tick 重試）
-- SJ2（大老山公路）路牌間中離線（feed 俾 `-1`），螢幕顯示 `--`；可以喺 `DashProtocol.slots` 改用 SJ3
-- 收費表跟法例，如有修訂改 `docs/toll-schedule.md` + 兩邊 engine 嘅 breakpoints
-- 數據版權：DATA.GOV.HK / 運輸署
-
-## 驗證狀態（2026-07-10）
-
-- ✅ Firmware build + 燒錄，BLE 廣播中，free heap ~104KB
-- ✅ Toll engine：firmware 3/3 native tests，iOS 6/6 tests（共用向量 parity）
-- ✅ 端到端：Mac (`ble_sim.py`) → 板，實時運輸署數據成功顯示
-- ✅ iPhone 真機配對 + 自動重連（斷電重上電 0.7 秒重連、3 秒內推齊數據）
-- ✅ 掃一掃全鏈路：GPS → 20,682 車位資料庫 → 實時佔用 → 中文街名空位清單上板
-
-## 開發途中踩過嘅坑（都修咗）
-
-- esp32_smartdisplay 唔會設 LVGL tick source — 冇 `lv_tick_set_cb(millis)` 畫面凍結兼觸控死
-- 政府 CSV 係 CRLF：Swift `split(separator: "\n")` 當 `\r\n` 係一個 Character，成個檔變一行 — 要用 `\.isNewline`
-- JTI XML 有 default namespace，`ElementTree.iter("tag")` 搵唔到
-- iOS 連接未 discover 完 characteristics 就 write 會被靜默丟棄 — 要排隊等 ready
-- 政府咪錶數據有 9 個車位座標喺巴黎/印度（座標範圍 guard 排除）
-- 街名中文字體：由 CSV 抽全港 931 條街 678 個唯一漢字生成 subset（~600KB flash）
+⚠️ 本項目與運輸署、消委會或任何政府機構**無關**。數據僅供參考，駕駛時請以路面實際情況同官方指示為準。
