@@ -1,6 +1,12 @@
 /* CYD-DASH screen replica.
+ *
  * Geometry mirrors firmware/src/ui/*.cpp on a 320x240 canvas, scaled up with a
- * transform so the whole thing stays pixel-faithful at any size. */
+ * transform so it stays pixel-faithful at any size.
+ *
+ * EVERY rule is scoped under `.device`. The page has its own `.card` and
+ * `.accent` classes, and an unscoped `.card { position: absolute }` in here
+ * silently flattened the whole feature grid.
+ */
 
 .device {
   --scale: 2;
@@ -11,173 +17,178 @@
 @media (max-width: 420px) { .device { --scale: 1.05; } }
 
 /* --- the CYD board itself --- */
-.board {
+.device .board {
   background: linear-gradient(180deg, #C98A1E 0%, #B8791A 100%);
   border-radius: 10px;
   padding: 14px 10px;
   box-shadow: 0 22px 50px rgba(0, 0, 0, .55), inset 0 1px 0 rgba(255, 255, 255, .18);
   position: relative;
 }
-.board::before, .board::after {   /* mounting screws */
+.device .board::before,
+.device .board::after {                     /* mounting screws */
   content: ""; position: absolute; width: 9px; height: 9px; border-radius: 50%;
   background: radial-gradient(circle at 35% 35%, #e8e8e8, #8a8a8a 60%, #555);
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .35);
 }
-.board::before { left: 7px; top: 6px; }
-.board::after  { right: 7px; top: 6px; }
-.usb {
+.device .board::before { left: 7px; top: 6px; }
+.device .board::after  { right: 7px; top: 6px; }
+.device .usb {
   position: absolute; left: 50%; transform: translateX(-50%);
   top: -6px; width: 34px; height: 10px; border-radius: 3px 3px 0 0;
   background: linear-gradient(180deg, #4a4a4a, #2b2b2b);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2);
 }
-
-.bezel {
-  background: #0a0a0a;
-  border-radius: 4px;
-  padding: 7px;
+.device .bezel {
+  background: #0a0a0a; border-radius: 4px; padding: 7px;
   box-shadow: inset 0 0 14px rgba(0, 0, 0, .9);
 }
 
 /* --- 320x240 screen --- */
-.screen-wrap {
+.device .screen-wrap {
   width: calc(320px * var(--scale));
   height: calc(240px * var(--scale));
-  overflow: hidden;
-  position: relative;
-  border-radius: 2px;
+  overflow: hidden; position: relative; border-radius: 2px;
 }
-#screen {
+.device #screen {
   width: 320px; height: 240px;
-  transform: scale(var(--scale));
-  transform-origin: top left;
+  transform: scale(var(--scale)); transform-origin: top left;
   position: relative;
-  background: #0B0F14;
-  color: #F2F5F8;
+  background: #0B0F14; color: #F2F5F8;
   font-family: "Noto Sans TC", "PingFang HK", -apple-system, system-ui, sans-serif;
-  user-select: none;
-  touch-action: pan-y;
-  cursor: pointer;
+  user-select: none; touch-action: pan-y; cursor: pointer;
 }
-/* faint glass sheen, like the real panel under a windscreen */
-.screen-wrap::after {
+/* faint glass sheen, like the real panel behind a windscreen */
+.device .screen-wrap::after {
   content: ""; position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(115deg, rgba(255, 255, 255, .07) 0%,
               rgba(255, 255, 255, 0) 38%, rgba(255, 255, 255, 0) 100%);
 }
 
-/* palette (same tokens as ui_internal.h) */
-.num   { font-variant-numeric: tabular-nums; font-weight: 700; }
-.num-lg { font-size: 30px; }
-.green { color: #34C759; }
-.red   { color: #FF4D4F; }
-.amber { color: #FFB020; }
-.teal  { color: #18AD8E; }
-.dim   { color: #8A97A5; }
-.cjk   { font-size: 13px; }
+/* palette — the same tokens as firmware/src/ui/ui_internal.h */
+.device .num    { font-variant-numeric: tabular-nums; font-weight: 700; }
+.device .num-lg { font-size: 30px; }
+.device .green  { color: #34C759; }
+.device .red    { color: #FF4D4F; }
+.device .amber  { color: #FFB020; }
+.device .teal   { color: #18AD8E; }
+.device .dim    { color: #8A97A5; }
+.device .cjk    { font-size: 13px; }
 
 /* --- header (HDR_H = 30) --- */
-.hdr { position: absolute; inset: 0 0 auto 0; height: 30px; }
-.accent { position: absolute; left: 8px; top: 7px; width: 4px; height: 18px;
-          background: #18AD8E; border-radius: 2px; }
-#title { position: absolute; left: 20px; top: 50%; transform: translateY(-50%);
-         font-size: 15px; font-weight: 600; }
-.updated { position: absolute; left: 50%; top: 50%;
-           transform: translate(calc(-50% + 10px), -50%);
-           font-size: 11px; color: #8A97A5; white-space: nowrap; }
-#clock { position: absolute; right: 26px; top: 50%; transform: translateY(-50%);
-         font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.btdot { position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
-         width: 10px; height: 10px; border-radius: 50%; background: #8A97A5; }
-.btdot.on { background: #18AD8E; box-shadow: 0 0 6px rgba(24, 173, 142, .8); }
+.device .hdr { position: absolute; inset: 0 0 auto 0; height: 30px; }
+.device .accent {
+  position: absolute; left: 8px; top: 7px; width: 4px; height: 18px;
+  background: #18AD8E; border-radius: 2px;
+}
+.device #title {
+  position: absolute; left: 20px; top: 50%; transform: translateY(-50%);
+  font-size: 15px; font-weight: 600;
+}
+.device .updated {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(calc(-50% + 10px), -50%);
+  font-size: 11px; color: #8A97A5; white-space: nowrap;
+}
+.device #clock {
+  position: absolute; right: 26px; top: 50%; transform: translateY(-50%);
+  font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums;
+}
+.device .btdot {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  width: 10px; height: 10px; border-radius: 50%; background: #8A97A5;
+}
+.device .btdot.on { background: #18AD8E; box-shadow: 0 0 6px rgba(24, 173, 142, .8); }
 
 /* --- page area (y 30 → 206) --- */
-.page { position: absolute; left: 0; top: 30px; width: 320px; height: 176px; }
+.device .page { position: absolute; left: 0; top: 30px; width: 320px; height: 176px; }
 
-.card {
+/* `top`/`height` are written inline by demo.js using the firmware's own
+   coordinates — CSS :nth-of-type() counts DIVs, not classes, and the header
+   rows on the meter/fuel pages silently shifted every card by one. */
+.device .card {
   position: absolute; left: 6px; width: 308px;
   background: #161D26; border: 1px solid #232C38; border-radius: 10px;
 }
 
-/* Card `top`/`height` come from JS with the firmware's own coordinates —
-   CSS :nth-of-type() counts DIVs, not classes, so the header rows on the
-   meter/fuel pages silently shifted every card by one. */
-
 /* 過海隧道 */
-.hname { position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
-         font-size: 15px; font-weight: 600; }
-.dir { position: absolute; top: 0; }
-.dir .lbl { position: absolute; top: 3px; left: 0; font-size: 11px; color: #8A97A5;
-            white-space: nowrap; }
-.dir .mrow { position: absolute; top: 19px; left: 0; display: flex;
-             align-items: baseline; gap: 3px; }
-.dir .mrow .num { font-size: 21px; line-height: 1; }
-.arrow { font-size: 12px; line-height: 1; }
-.pill { position: absolute; right: 8px; top: 5px; width: 78px; height: 24px;
-        background: #18AD8E; border-radius: 12px; color: #fff;
-        font-size: 15px; font-weight: 700; display: flex;
-        align-items: center; justify-content: center;
-        font-variant-numeric: tabular-nums; }
-.next { position: absolute; right: 8px; bottom: 4px; font-size: 11px; color: #8A97A5;
-        white-space: nowrap; }
+.device .hname {
+  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+  font-size: 15px; font-weight: 600;
+}
+.device .dir { position: absolute; top: 0; }
+.device .dir .lbl {
+  position: absolute; top: 3px; left: 0; font-size: 11px; color: #8A97A5;
+  white-space: nowrap;
+}
+.device .dir .mrow {
+  position: absolute; top: 19px; left: 0; display: flex;
+  align-items: baseline; gap: 3px;
+}
+.device .dir .mrow .num { font-size: 21px; line-height: 1; }
+.device .arrow { font-size: 12px; line-height: 1; }
+.device .pill {
+  position: absolute; right: 8px; top: 5px; width: 78px; height: 24px;
+  background: #18AD8E; border-radius: 12px; color: #fff;
+  font-size: 15px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  font-variant-numeric: tabular-nums;
+}
+.device .next {
+  position: absolute; right: 8px; bottom: 4px;
+  font-size: 11px; color: #8A97A5; white-space: nowrap;
+}
 
 /* 主要幹道 */
-.rname { position: absolute; left: 10px; top: 6px; font-size: 15px; font-weight: 600; }
-.rsub  { position: absolute; left: 10px; top: 31px; font-size: 11px; color: #8A97A5; }
-.rmin  { position: absolute; right: 50px; top: 50%; transform: translateY(-50%); }
-.rmin .num-lg { font-size: 30px; line-height: 1; }
-.rsuf  { position: absolute; right: 10px; top: 50%;
-         transform: translateY(calc(-50% + 8px)); font-size: 11px; color: #8A97A5; }
-.rarrow { position: absolute; right: 10px; top: 50%;
-          transform: translateY(calc(-50% - 12px)); font-size: 12px; }
+.device .rname { position: absolute; left: 10px; top: 6px; font-size: 15px; font-weight: 600; }
+.device .rsub  { position: absolute; left: 10px; top: 31px; font-size: 11px; color: #8A97A5; }
+.device .rmin  { position: absolute; right: 50px; top: 50%; transform: translateY(-50%); }
+.device .rmin .num-lg { font-size: 30px; line-height: 1; }
+.device .rsuf {
+  position: absolute; right: 10px; top: 50%;
+  transform: translateY(calc(-50% + 8px)); font-size: 11px; color: #8A97A5;
+}
+.device .rarrow {
+  position: absolute; right: 10px; top: 50%;
+  transform: translateY(calc(-50% - 12px)); font-size: 12px;
+}
 
 /* 附近咪錶 */
-.scan {
+.device .scan {
   position: absolute; left: 6px; top: 2px; width: 132px; height: 36px;
   background: #18AD8E; color: #fff; border: 0; border-radius: 18px;
-  font: 600 15px/1 "Noto Sans TC", "PingFang HK", sans-serif;
-  cursor: pointer; font-family: inherit;
+  font: 600 15px/1 "Noto Sans TC", "PingFang HK", sans-serif; cursor: pointer;
 }
-.scan:hover { background: #14997E; }
-.scan.busy { background: #232C38; color: #8A97A5; cursor: default; }
-.mstatus { position: absolute; right: 8px; top: 12px; font-size: 11px; color: #8A97A5; }
-.mname { position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
-         font-size: 13px; }
-.mdist { position: absolute; right: 108px; top: 50%; transform: translateY(-50%);
-         font-size: 11px; color: #8A97A5; }
-.mlpp  { position: absolute; right: 58px; top: 50%; transform: translateY(-50%);
-         font-size: 11px; color: #8A97A5; }
-.mvac  { position: absolute; right: 30px; top: 50%; transform: translateY(-50%);
-         font-size: 15px; }
-.mtot  { position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
-         font-size: 11px; color: #8A97A5; }
+.device .scan:hover { background: #14997E; }
+.device .scan.busy { background: #232C38; color: #8A97A5; cursor: default; }
+.device .mstatus { position: absolute; right: 8px; top: 12px; font-size: 11px; color: #8A97A5; }
+.device .mname { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); font-size: 13px; }
+.device .mdist { position: absolute; right: 108px; top: 50%; transform: translateY(-50%); font-size: 11px; color: #8A97A5; }
+.device .mlpp  { position: absolute; right: 58px; top: 50%; transform: translateY(-50%); font-size: 11px; color: #8A97A5; }
+.device .mvac  { position: absolute; right: 30px; top: 50%; transform: translateY(-50%); font-size: 15px; }
+.device .mtot  { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-size: 11px; color: #8A97A5; }
 
 /* 油價 */
-.fhead { position: absolute; left: 0; top: 0; width: 320px; height: 20px; }
-.fage  { position: absolute; left: 8px; top: 2px; font-size: 11px; color: #8A97A5; }
-.ftype { position: absolute; top: 2px; font-size: 11px; color: #8A97A5; }
-.fbrand { position: absolute; left: 6px; top: 50%; transform: translateY(-50%);
-          font-size: 13px; }
-.fprice { position: absolute; top: 50%; transform: translateY(-50%);
-          font-size: 12px; font-weight: 700; }
+.device .fhead  { position: absolute; left: 0; top: 0; width: 320px; height: 20px; }
+.device .fage   { position: absolute; left: 8px; top: 2px; font-size: 11px; color: #8A97A5; }
+.device .ftype  { position: absolute; top: 2px; font-size: 11px; color: #8A97A5; }
+.device .fbrand { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); font-size: 13px; }
+.device .fprice { position: absolute; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: 700; }
 
 /* --- tab bar (FTR_H = 34) --- */
-.tabs { position: absolute; left: 0; bottom: 0; width: 320px; height: 34px; }
-.tab {
+.device .tabs { position: absolute; left: 0; bottom: 0; width: 320px; height: 34px; }
+.device .tab {
   position: absolute; top: 2px; height: 30px; width: 76px;
   background: #161D26; color: #8A97A5; border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
   font-size: 15px; font-weight: 600; cursor: pointer;
   transition: background .18s, color .18s;
 }
-.tab:nth-child(1) { left: 4px; }
-.tab:nth-child(2) { left: 84px; }
-.tab:nth-child(3) { left: 164px; }
-.tab:nth-child(4) { left: 244px; }
-.tab.active { background: #18AD8E; color: #fff; }
-.tab:not(.active):hover { background: #1E2733; color: #C8D2DC; }
+.device .tab:nth-child(1) { left: 4px; }
+.device .tab:nth-child(2) { left: 84px; }
+.device .tab:nth-child(3) { left: 164px; }
+.device .tab:nth-child(4) { left: 244px; }
+.device .tab.active { background: #18AD8E; color: #fff; }
+.device .tab:not(.active):hover { background: #1E2733; color: #C8D2DC; }
 
-.device-cap {
-  text-align: center; color: #8A97A5; font-size: 13px; margin-top: 16px;
-}
+.device-cap { text-align: center; color: #8A97A5; font-size: 13px; margin-top: 16px; }
 .device-cap b { color: #18AD8E; font-weight: 600; }
