@@ -1,7 +1,7 @@
 // Parity tests — same shared vectors as firmware test_toll_engine
 // (docs/toll-schedule.md). If these change, both sides must change.
 import XCTest
-@testable import CYDDash
+@testable import HKCarDash
 
 final class TollEngineTests: XCTestCase {
     // (h, m, s, WHC weekday, CHT/EHC weekday, Sun/PH)

@@ -18,11 +18,11 @@ final class FuelPriceService {
     private(set) var fetchedAt: Date?
 
     init() {
-        if let cached = UserDefaults.standard.array(forKey: Self.cacheKey) as? [[Int]],
+        if let cached = AppGroup.defaults.array(forKey: Self.cacheKey) as? [[Int]],
            cached.count == 5 {
             cents = cached.map { $0.map { $0 >= 0 ? UInt16($0) : nil } }
         }
-        let t = UserDefaults.standard.double(forKey: Self.fetchedAtKey)
+        let t = AppGroup.defaults.double(forKey: Self.fetchedAtKey)
         if t > 0 { fetchedAt = Date(timeIntervalSince1970: t) }
     }
 
@@ -40,9 +40,9 @@ final class FuelPriceService {
             if let parsed = Self.parse(data) {
                 cents = parsed
                 fetchedAt = Date()
-                UserDefaults.standard.set(
+                AppGroup.defaults.set(
                     cents.map { $0.map { $0.map(Int.init) ?? -1 } }, forKey: Self.cacheKey)
-                UserDefaults.standard.set(fetchedAt!.timeIntervalSince1970,
+                AppGroup.defaults.set(fetchedAt!.timeIntervalSince1970,
                                           forKey: Self.fetchedAtKey)
             }
         } catch {

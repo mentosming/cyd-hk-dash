@@ -38,13 +38,13 @@ enum SlotConfig {
     ]
 
     static func selected(slot: UInt8) -> RouteOption {
-        let key = UserDefaults.standard.string(forKey: "slot\(slot)") ?? defaults[slot]!
+        let key = AppGroup.defaults.string(forKey: "slot\(slot)") ?? defaults[slot]!
         return options.first { $0.id == key }
             ?? options.first { $0.id == defaults[slot]! }!
     }
 
     static func setSelected(slot: UInt8, option: RouteOption) {
-        UserDefaults.standard.set(option.id, forKey: "slot\(slot)")
+        AppGroup.defaults.set(option.id, forKey: "slot\(slot)")
     }
 
     /// Full slot list for the journey fetch: fixed harbour slots + configured.

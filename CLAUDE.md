@@ -23,10 +23,10 @@ pio run -e cyd -t upload --upload-port $(ls /dev/cu.usbserial-* | head -1)
 
 # iOS（xcodegen 生成 .xcodeproj；改 project.yml/加檔後要 regenerate）
 cd ios-app && xcodegen generate
-xcodebuild -project CYDDash.xcodeproj -scheme CYDDash -destination 'id=<sim-id>' test          # 12 tests
-xcodebuild -project CYDDash.xcodeproj -scheme CYDDash -destination 'generic/platform=iOS' -allowProvisioningUpdates build
-# 裝真機（signing team A7YC2GSU54，個人帳戶簽名 7 日過期）
-APP=$(ls -td ~/Library/Developer/Xcode/DerivedData/CYDDash-*/Build/Products/Debug-iphoneos/CYDDash.app | head -1)
+xcodebuild -project HKCarDash.xcodeproj -scheme HKCarDash -destination 'id=<sim-id>' test      # 16 tests
+xcodebuild -project HKCarDash.xcodeproj -scheme HKCarDash -destination 'generic/platform=iOS' -allowProvisioningUpdates build
+# 裝真機（team A7YC2GSU54）
+APP=$(ls -td ~/Library/Developer/Xcode/DerivedData/HKCarDash-*/Build/Products/Debug-iphoneos/HKCarDash.app | head -1)
 xcrun devicectl device install app --device <iphone-udid> "$APP"
 
 # 端到端測試（Mac 藍牙模擬手機，唔使 iPhone）
@@ -52,6 +52,25 @@ uv run --with bleak --with requests python tools/ble_sim.py [--fake] [--token <h
 ## 咪錶數據準確性（官方 TD spec）
 
 只計 `VehicleType == "A"`（私家車；C=旅遊巴 G=貨車）、排除 `PoleId > 90000`（測試錶）、依 `OperatingPeriod` 26-code 准泊時段（`OperatingPeriod.swift`，P/S 有明示禁泊窗）、`LPP` = 最長可泊 30/60/120 分。
+
+## iOS app（HK CarDash，上架用）
+
+三個 target：`HKCarDash`（app）、`HKCarDashWidgets`（WidgetKit extension）、`HKCarDashTests`。
+`Shared/` 入面嘅檔**同時屬於 app 同 widget 兩個 target** —— 加新 shared 檔記住放 `Shared/`，唔好複製。
+Widget 讀寫 **App Group**（`group.com.kmai.hkcardash`）：`Shared/AppGroup.swift` 係 UserDefaults 入口，
+`HolidayService`/`FuelPriceService`/`SlotConfig`/journey cache 全部走呢度，widget 先讀到 app 攞返嚟嘅數據。
+
+- `LiveDataStore` = 唯一 fetch 路徑（journey + fuel），Dashboard 同 BLE push 共用，順手寫 widget cache
+- 地圖用**地政總署 CSDI XYZ tiles**（免 key，web-mercator，`MKTileOverlay` 直接用），條款要求地圖面顯示 attribution
+- Widget 分兩類：收費 widget 零網絡（`TollEngine` breakpoint 預排 timeline，準時跳價）；journey/fuel 靠 WidgetKit budget
+- **licence 分家**：`ios-app/` 係 MIT，其餘 GPL-3.0（GPL 同 App Store 條款唔相容）
+- 上架 checklist / Review Notes / metadata：`docs/app-store-submission.md`
+
+## 開源發佈（Track A）
+
+`docs/` = GitHub Pages（https://mentosming.github.io/cyd-hk-dash/）：一鍵瀏覽器燒錄（ESP Web Tools）+ privacy policy。
+**merged bin 同 manifest 一定要放 `docs/`（同源）** —— ESP Web Tools 用 `fetch()` 攞 bin，而 GitHub Release asset 冇 CORS header。
+`.github/workflows/release.yml` 打 tag `v*` 自動 build + merge + 推上 Pages。esptool 要 pin `>=4,<5`（v5 改咗 `merge_bin` → `merge-bin`）。
 
 ## 硬件旋轉 / 觸控
 

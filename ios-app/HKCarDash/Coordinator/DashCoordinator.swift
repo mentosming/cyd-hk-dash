@@ -17,14 +17,15 @@ final class DashCoordinator: NSObject, ObservableObject {
     @Published var hasToken = PairingToken.isSet
 
     let central = DashCentral()
-    let holidays = HolidayService()
-    let journeyService = JourneyTimeService()
+    let live = LiveDataStore()            // journey + fuel, works with no display
     let meterStore = MeterStore()
-    let fuelService = FuelPriceService()
     lazy var meterQuery = MeterQueryService(store: meterStore)
 
-    private var lastJourneyFetch: Date = .distantPast
+    var holidays: HolidayService { live.holidays }
+
     private var linkReady = false        // characteristics discovered
+    private var lastJourneyPayload: Data?
+    private var metersRunning = false
     private var metersRequestPending = false
     private var lastFuelPush: Date = .distantPast
     // Auto-refresh window: after a successful scan, keep meters fresh for 10 min
@@ -35,11 +36,12 @@ final class DashCoordinator: NSObject, ObservableObject {
         super.init()
         central.delegate = self
         hasPairedDevice = central.hasPairedDevice
+        applyDemoState()
         meterStore.logger = { [weak self] msg in
             Task { @MainActor in self?.log(msg) }
         }
         Task {
-            await holidays.refreshIfStale()
+            await live.refreshAll()
             await meterStore.loadOrRefresh()
             log("咪錶資料庫: \(meterStore.count) 個車位")
         }
@@ -48,6 +50,31 @@ final class DashCoordinator: NSObject, ObservableObject {
     func pair() {
         central.startPairing()
         hasPairedDevice = central.hasPairedDevice
+    }
+
+    /// Demo mode must take effect immediately — an App Review reviewer flips the
+    /// toggle and looks at the 顯示屏 tab straight away; requiring a relaunch
+    /// would read as "the feature is broken".
+    func setDemoMode(_ on: Bool) {
+        DemoMode.isEnabled = on
+        applyDemoState()
+    }
+
+    private func applyDemoState() {
+        if DemoMode.isEnabled {
+            connectionState = DemoMode.connectionState
+            deviceInfo = DemoMode.deviceInfo
+            hasPairedDevice = true
+            hasToken = true
+            needsPairing = false
+        } else {
+            // Back to the real link state (also fixes the reverse path: turning
+            // demo off used to leave the device looking paired forever).
+            connectionState = central.isConnected ? "已連接" : "未連接"
+            deviceInfo = ""
+            hasPairedDevice = central.hasPairedDevice
+            hasToken = PairingToken.isSet
+        }
     }
 
     /// Handle a scanned QR deep link (cyddash://pair?t=…). Stores the token,
@@ -88,9 +115,6 @@ final class DashCoordinator: NSObject, ObservableObject {
     // MARK: pipeline
 
     private func pushTimeSyncAndJourney(force: Bool = false) {
-        guard force || -lastJourneyFetch.timeIntervalSinceNow > 110 else { return }
-        lastJourneyFetch = Date()
-
         // Write TimeSync FIRST, with no await before it. The holiday feed
         // (sunPHFlags uses the cached set only) must never block this — a
         // hung network fetch here used to stall the whole push.
@@ -101,19 +125,24 @@ final class DashCoordinator: NSObject, ObservableObject {
         if force { pushSlotNames() }
 
         Task {
-            do {
-                let (capture, entries) = try await journeyService.fetch()
-                central.write(DashProtocol.encodeJourney(captureEpoch: capture, entries: entries),
-                              to: DashProtocol.UUIDs.journey)
-                lastJourneyPush = Date()
-                let live = entries.filter { $0.minutes < 0xFD }.count
-                log("已推送行車時間（\(live)/\(entries.count) 個路段有數據）")
-            } catch {
-                log("行車時間讀取失敗: \(error.localizedDescription)")
+            // LiveDataStore owns the throttle (the TD feed only moves every 2 min)
+            await live.refreshJourney(force: force)
+            let entries = live.journeyPayloadEntries
+            guard !entries.isEmpty else {
+                log("行車時間讀取失敗: \(live.journeyError ?? "冇數據")")
+                return
             }
+            let payload = DashProtocol.encodeJourney(
+                captureEpoch: live.captureEpoch, entries: entries)
+            // Don't re-send an identical payload: the display already has it, and
+            // a BLE write every tick for nothing costs power on both ends.
+            guard force || payload != lastJourneyPayload else { return }
+            lastJourneyPayload = payload
+            central.write(payload, to: DashProtocol.UUIDs.journey)
+            lastJourneyPush = Date()
+            let liveCount = entries.filter { $0.minutes < DashProtocol.minutesClosed }.count
+            log("已推送行車時間（\(liveCount)/\(entries.count) 個路段）")
         }
-        // Off the hot path: holiday cache + fuel prices (6-hourly).
-        Task { await holidays.refreshIfStale() }
         pushFuelIfStale(force: force)
     }
 
@@ -125,6 +154,13 @@ final class DashCoordinator: NSObject, ObservableObject {
 
     /// Called by the settings UI when the user changes a slot route.
     func routeConfigChanged() {
+        // Drop the old route's minutes first: the Dashboard reads the route NAME
+        // from SlotConfig (already changed) but the MINUTES from LiveDataStore —
+        // leaving the old value would show the new route's name against the old
+        // route's travel time. Refetch even when no display is connected.
+        live.invalidateConfigurableSlots()
+        Task { await live.refreshJourney(force: true) }
+
         guard linkReady else { return }
         pushSlotNames()
         pushTimeSyncAndJourney(force: true)
@@ -133,25 +169,36 @@ final class DashCoordinator: NSObject, ObservableObject {
     private func pushFuelIfStale(force: Bool) {
         guard force || -lastFuelPush.timeIntervalSinceNow > 6 * 3600 else { return }
         Task {
-            guard await fuelService.refreshIfStale() else {
+            guard await live.refreshFuel() else {
                 log("油價讀取失敗（無 cache）")
                 return
             }
-            central.write(
-                DashProtocol.encodeFuelPrices(
-                    fetchEpoch: UInt32((fuelService.fetchedAt ?? Date()).timeIntervalSince1970),
-                    cents: fuelService.cents),
-                to: DashProtocol.UUIDs.fuelPrices)
+            central.write(live.fuelPayload, to: DashProtocol.UUIDs.fuelPrices)
             lastFuelPush = Date()
-            log("已推送油價（消委會，\(String(format: "%.1f", fuelService.ageHours))小時前數據）")
+            log("已推送油價（消委會）")
         }
     }
 
     private func runMetersFlow() {
+        // Re-entrancy guard: two 掃一掃 presses used to run two concurrent
+        // meterQuery.run()s on the same service, which overwrote (and leaked)
+        // the location CheckedContinuation — that Task then never finished and
+        // its background-task assertion was never ended, so iOS would kill us.
+        guard !metersRunning else {
+            log("咪錶掃描進行中，忽略重複請求")
+            return
+        }
+        metersRunning = true
+        lastMetersRun = Date()
+
         // Buy background time: the whole flow (GPS + ~700 KB fetch) can
         // exceed the ~10 s BLE wake window.
-        lastMetersRun = Date()
-        let bgTask = UIApplication.shared.beginBackgroundTask(withName: "meters")
+        var bgTask = UIBackgroundTaskIdentifier.invalid
+        bgTask = UIApplication.shared.beginBackgroundTask(withName: "meters") {
+            // Expiration handler — without it an unended task is a hard kill.
+            UIApplication.shared.endBackgroundTask(bgTask)
+            bgTask = .invalid
+        }
         Task {
             log("掃描開始: 資料庫\(meterStore.count)個位, 定位權限[\(meterQuery.authDescription)]")
             let (status, groups) = await meterQuery.run()
@@ -171,7 +218,11 @@ final class DashCoordinator: NSObject, ObservableObject {
             case 2: log("咪錶: 佔用數據讀取失敗")
             default: log("咪錶: 4公里內冇咪錶")
             }
-            UIApplication.shared.endBackgroundTask(bgTask)
+            metersRunning = false
+            if bgTask != .invalid {
+                UIApplication.shared.endBackgroundTask(bgTask)
+                bgTask = .invalid
+            }
         }
     }
 }

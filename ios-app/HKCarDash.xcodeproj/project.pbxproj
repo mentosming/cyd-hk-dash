@@ -1,0 +1,703 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0331452DFDA4654AF0AE2FA4 /* AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E09E3CF2E5258F8E9A0E455 /* AppGroup.swift */; };
+		0366A7BF2D39D04B36AB0334 /* PairingToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAE628B4F520291042E65C7D /* PairingToken.swift */; };
+		12CAAB960F1519059F2B2FFE /* HKCarDashWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D8855091A93CE1F5DBD4FAA /* HKCarDashWidgets.swift */; };
+		15B21608358EF42A43F90918 /* HolidayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F5A65F354561208B9192CD2 /* HolidayService.swift */; };
+		1925FD2F410094F864010984 /* HKCarDashApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FD60FB433F15A20C05A5FCF /* HKCarDashApp.swift */; };
+		1EB998885CCC6E878D493550 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9A693A722ABAC48B5688550A /* Assets.xcassets */; };
+		2347EF5970FFDE4812E05F3F /* TollEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A14BB7E73C2B68B3E0D7E3F1 /* TollEngine.swift */; };
+		38FAB5162925C8A9498DD83C /* FuelPriceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47B44E5E76492DFFE3361B2A /* FuelPriceService.swift */; };
+		3D5CA4683C70CCF9D6F13F34 /* OperatingPeriod.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50EC8523787F392806D43470 /* OperatingPeriod.swift */; };
+		40AB132E566D09DF66BC4552 /* WidgetTimelineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 038570FE9887495B5D062CF1 /* WidgetTimelineTests.swift */; };
+		4559AD4029FEDE52982BE985 /* DashCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91D21423F4373F48EFC3F724 /* DashCoordinator.swift */; };
+		4ED06B8ACDAA1803C6423F43 /* SlotConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 697869AF62FE31F353719F69 /* SlotConfig.swift */; };
+		51B408A5AFBDB9841604B0AB /* JourneyTimeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46A30222A483D685699E9654 /* JourneyTimeService.swift */; };
+		522B0D8D78A3792A466D2FAF /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10992A67A70883137850AD33 /* SettingsView.swift */; };
+		590938312C5741B64A37E49E /* LiveDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 864B44B99A8C3FB012907371 /* LiveDataStore.swift */; };
+		5BB198DCB88BD9C36827903C /* DeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 078972D6BBF57D77DA31511D /* DeviceView.swift */; };
+		5DFC782FC4D2AD96C08A4D3A /* JourneyTimeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46A30222A483D685699E9654 /* JourneyTimeService.swift */; };
+		6A2F2A3CDE595E5D67623D00 /* QRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E773032308B401F26C0ED6 /* QRScannerView.swift */; };
+		6F0F5F958507216B1DED6097 /* TollEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1601D055D00C4F00433B327 /* TollEngineTests.swift */; };
+		7284FE3A9312E3311E0CBF14 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EDF03046A12EB7DDE2538D6 /* DashboardView.swift */; };
+		8D15A9E6393605DB0B791384 /* SlotConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 697869AF62FE31F353719F69 /* SlotConfig.swift */; };
+		8D6C17FD2618123DCCA2C27A /* DashProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 144D057A4FE9478D56FC208E /* DashProtocol.swift */; };
+		90845748C1986BEFB14FBEFE /* MeterMapScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D4BFB64ECB8DC788BEBB17 /* MeterMapScreen.swift */; };
+		98CA771908DD2CC9D78B8B7B /* TollEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A14BB7E73C2B68B3E0D7E3F1 /* TollEngine.swift */; };
+		9C4FB297707DE4AF98FC2788 /* DashProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 144D057A4FE9478D56FC208E /* DashProtocol.swift */; };
+		9DAACAAB803E1F90B63F3B4E /* JourneyWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF7235D4693A9DB84C676FE2 /* JourneyWidget.swift */; };
+		A2617909859EBF9E6699E772 /* MeterQueryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3676FB745460FA1383644B1B /* MeterQueryService.swift */; };
+		A653014CB2448DD6A350085F /* AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E09E3CF2E5258F8E9A0E455 /* AppGroup.swift */; };
+		AA49C1193D928D342D19973F /* FuelPriceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47B44E5E76492DFFE3361B2A /* FuelPriceService.swift */; };
+		AE9A67EF421BE52C2DC86333 /* HolidayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F5A65F354561208B9192CD2 /* HolidayService.swift */; };
+		B016FF9D1BBFCB44E4F0F8BA /* Brand.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6C81A3604B0A9C182314ED6 /* Brand.swift */; };
+		B8175769A46D2E1AFEB04D00 /* Brand.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6C81A3604B0A9C182314ED6 /* Brand.swift */; };
+		BEC5FFBDACF307A10991D9F7 /* DemoMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44B8C251BF9E25A7DB70F7A7 /* DemoMode.swift */; };
+		C0E8E3223F1A471FC1E4242C /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D813C73726C45BADD58FE8 /* OnboardingView.swift */; };
+		C3052653402029D94B131227 /* TollWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0856D67606404074CD441321 /* TollWidget.swift */; };
+		EA426A0E57D860C1D3C20BDC /* HKCarDashWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 5AB7A2EEBC8C673FBF2DD081 /* HKCarDashWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		EF927A85818DF6B989102412 /* OperatingPeriod.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50EC8523787F392806D43470 /* OperatingPeriod.swift */; };
+		F012CB01B47B68AD136CA1BC /* DashCentral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7079FEB49521B1EB163AB83A /* DashCentral.swift */; };
+		F105D609B5ADF1C1AF094324 /* FuelWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 955BABC77EAB029DB47FEBDF /* FuelWidget.swift */; };
+		F9CC492B26D7A27612593D12 /* MeterStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6528938140480FFDBE428B9C /* MeterStore.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F9B12F0DFC05F59329F92A50 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 965B3C6CF34E743CF334FB46 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F453F9C56D19F0292D9AA225;
+			remoteInfo = HKCarDashWidgets;
+		};
+		FE96A095D53D29229EF5C7A6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 965B3C6CF34E743CF334FB46 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 27B5F5FBC240F80E28B08822;
+			remoteInfo = HKCarDash;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A965A7B0BC75FBAB37056D8A /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				EA426A0E57D860C1D3C20BDC /* HKCarDashWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		038570FE9887495B5D062CF1 /* WidgetTimelineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetTimelineTests.swift; sourceTree = "<group>"; };
+		078972D6BBF57D77DA31511D /* DeviceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceView.swift; sourceTree = "<group>"; };
+		0856D67606404074CD441321 /* TollWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TollWidget.swift; sourceTree = "<group>"; };
+		0EDF03046A12EB7DDE2538D6 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		10992A67A70883137850AD33 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		144D057A4FE9478D56FC208E /* DashProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashProtocol.swift; sourceTree = "<group>"; };
+		3676FB745460FA1383644B1B /* MeterQueryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeterQueryService.swift; sourceTree = "<group>"; };
+		44B8C251BF9E25A7DB70F7A7 /* DemoMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoMode.swift; sourceTree = "<group>"; };
+		46A30222A483D685699E9654 /* JourneyTimeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyTimeService.swift; sourceTree = "<group>"; };
+		47B44E5E76492DFFE3361B2A /* FuelPriceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FuelPriceService.swift; sourceTree = "<group>"; };
+		50EC8523787F392806D43470 /* OperatingPeriod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperatingPeriod.swift; sourceTree = "<group>"; };
+		5AB7A2EEBC8C673FBF2DD081 /* HKCarDashWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = HKCarDashWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		5F5A65F354561208B9192CD2 /* HolidayService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HolidayService.swift; sourceTree = "<group>"; };
+		5FD60FB433F15A20C05A5FCF /* HKCarDashApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HKCarDashApp.swift; sourceTree = "<group>"; };
+		61D813C73726C45BADD58FE8 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		61E773032308B401F26C0ED6 /* QRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerView.swift; sourceTree = "<group>"; };
+		6528938140480FFDBE428B9C /* MeterStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeterStore.swift; sourceTree = "<group>"; };
+		697869AF62FE31F353719F69 /* SlotConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlotConfig.swift; sourceTree = "<group>"; };
+		7002428D5D6CBAF58ACF4D33 /* HKCarDashTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = HKCarDashTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7079FEB49521B1EB163AB83A /* DashCentral.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashCentral.swift; sourceTree = "<group>"; };
+		772722E9EB549692C8CF9668 /* HKCarDash.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HKCarDash.entitlements; sourceTree = "<group>"; };
+		7D8855091A93CE1F5DBD4FAA /* HKCarDashWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HKCarDashWidgets.swift; sourceTree = "<group>"; };
+		7FEB0AE1F049B60FCBA166B3 /* HKCarDash.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = HKCarDash.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		864B44B99A8C3FB012907371 /* LiveDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveDataStore.swift; sourceTree = "<group>"; };
+		91D21423F4373F48EFC3F724 /* DashCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashCoordinator.swift; sourceTree = "<group>"; };
+		955BABC77EAB029DB47FEBDF /* FuelWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FuelWidget.swift; sourceTree = "<group>"; };
+		9A693A722ABAC48B5688550A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		9E09E3CF2E5258F8E9A0E455 /* AppGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGroup.swift; sourceTree = "<group>"; };
+		A14BB7E73C2B68B3E0D7E3F1 /* TollEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TollEngine.swift; sourceTree = "<group>"; };
+		AC6A83CF460806628897B3DD /* HKCarDashWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HKCarDashWidgets.entitlements; sourceTree = "<group>"; };
+		C6C81A3604B0A9C182314ED6 /* Brand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Brand.swift; sourceTree = "<group>"; };
+		C8D4BFB64ECB8DC788BEBB17 /* MeterMapScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeterMapScreen.swift; sourceTree = "<group>"; };
+		DAE628B4F520291042E65C7D /* PairingToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PairingToken.swift; sourceTree = "<group>"; };
+		DF7235D4693A9DB84C676FE2 /* JourneyWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyWidget.swift; sourceTree = "<group>"; };
+		F1601D055D00C4F00433B327 /* TollEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TollEngineTests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		161C5AB731B552E9CB7BF3E3 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				9E09E3CF2E5258F8E9A0E455 /* AppGroup.swift */,
+				C6C81A3604B0A9C182314ED6 /* Brand.swift */,
+				144D057A4FE9478D56FC208E /* DashProtocol.swift */,
+				47B44E5E76492DFFE3361B2A /* FuelPriceService.swift */,
+				5F5A65F354561208B9192CD2 /* HolidayService.swift */,
+				46A30222A483D685699E9654 /* JourneyTimeService.swift */,
+				50EC8523787F392806D43470 /* OperatingPeriod.swift */,
+				697869AF62FE31F353719F69 /* SlotConfig.swift */,
+				A14BB7E73C2B68B3E0D7E3F1 /* TollEngine.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		27D65D1412F4F0F055096068 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7FEB0AE1F049B60FCBA166B3 /* HKCarDash.app */,
+				7002428D5D6CBAF58ACF4D33 /* HKCarDashTests.xctest */,
+				5AB7A2EEBC8C673FBF2DD081 /* HKCarDashWidgets.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		4F688D808471B1F71CF7A34C = {
+			isa = PBXGroup;
+			children = (
+				B5BE9402B7BD6FAA1102E4B3 /* HKCarDash */,
+				B072CE902AFE755064A691FA /* HKCarDashTests */,
+				F9A38B64DEC31FEBFD8FEE14 /* HKCarDashWidgets */,
+				161C5AB731B552E9CB7BF3E3 /* Shared */,
+				27D65D1412F4F0F055096068 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		55073E8D5A7D0BB4720A8624 /* Coordinator */ = {
+			isa = PBXGroup;
+			children = (
+				91D21423F4373F48EFC3F724 /* DashCoordinator.swift */,
+			);
+			path = Coordinator;
+			sourceTree = "<group>";
+		};
+		6121E0E0F330E4FF4B171501 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				0EDF03046A12EB7DDE2538D6 /* DashboardView.swift */,
+				078972D6BBF57D77DA31511D /* DeviceView.swift */,
+				C8D4BFB64ECB8DC788BEBB17 /* MeterMapScreen.swift */,
+				61D813C73726C45BADD58FE8 /* OnboardingView.swift */,
+				61E773032308B401F26C0ED6 /* QRScannerView.swift */,
+				10992A67A70883137850AD33 /* SettingsView.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		8EBC338C776B61779B3FBFD1 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				44B8C251BF9E25A7DB70F7A7 /* DemoMode.swift */,
+				864B44B99A8C3FB012907371 /* LiveDataStore.swift */,
+				3676FB745460FA1383644B1B /* MeterQueryService.swift */,
+				6528938140480FFDBE428B9C /* MeterStore.swift */,
+				DAE628B4F520291042E65C7D /* PairingToken.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		B072CE902AFE755064A691FA /* HKCarDashTests */ = {
+			isa = PBXGroup;
+			children = (
+				F1601D055D00C4F00433B327 /* TollEngineTests.swift */,
+				038570FE9887495B5D062CF1 /* WidgetTimelineTests.swift */,
+			);
+			path = HKCarDashTests;
+			sourceTree = "<group>";
+		};
+		B5BE9402B7BD6FAA1102E4B3 /* HKCarDash */ = {
+			isa = PBXGroup;
+			children = (
+				9A693A722ABAC48B5688550A /* Assets.xcassets */,
+				772722E9EB549692C8CF9668 /* HKCarDash.entitlements */,
+				5FD60FB433F15A20C05A5FCF /* HKCarDashApp.swift */,
+				C9CF2DE84EDBA02E69DDB908 /* BLE */,
+				55073E8D5A7D0BB4720A8624 /* Coordinator */,
+				8EBC338C776B61779B3FBFD1 /* Services */,
+				6121E0E0F330E4FF4B171501 /* UI */,
+			);
+			path = HKCarDash;
+			sourceTree = "<group>";
+		};
+		C9CF2DE84EDBA02E69DDB908 /* BLE */ = {
+			isa = PBXGroup;
+			children = (
+				7079FEB49521B1EB163AB83A /* DashCentral.swift */,
+			);
+			path = BLE;
+			sourceTree = "<group>";
+		};
+		F9A38B64DEC31FEBFD8FEE14 /* HKCarDashWidgets */ = {
+			isa = PBXGroup;
+			children = (
+				955BABC77EAB029DB47FEBDF /* FuelWidget.swift */,
+				AC6A83CF460806628897B3DD /* HKCarDashWidgets.entitlements */,
+				7D8855091A93CE1F5DBD4FAA /* HKCarDashWidgets.swift */,
+				DF7235D4693A9DB84C676FE2 /* JourneyWidget.swift */,
+				0856D67606404074CD441321 /* TollWidget.swift */,
+			);
+			path = HKCarDashWidgets;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		27B5F5FBC240F80E28B08822 /* HKCarDash */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9DCE81ADCE21586EC3A8C6ED /* Build configuration list for PBXNativeTarget "HKCarDash" */;
+			buildPhases = (
+				F86ADB3ABC63D2D84ABCB44F /* Sources */,
+				4F441B756C121CA2E3BD2C72 /* Resources */,
+				A965A7B0BC75FBAB37056D8A /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4F58D3AD58E1061A76369166 /* PBXTargetDependency */,
+			);
+			name = HKCarDash;
+			packageProductDependencies = (
+			);
+			productName = HKCarDash;
+			productReference = 7FEB0AE1F049B60FCBA166B3 /* HKCarDash.app */;
+			productType = "com.apple.product-type.application";
+		};
+		7A9C4A003E649992CBF52270 /* HKCarDashTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 099E12F9DE477713E514D5F8 /* Build configuration list for PBXNativeTarget "HKCarDashTests" */;
+			buildPhases = (
+				8004E971B0DEF97F7FBF9F32 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C41FC99BA5D90381E8844D5E /* PBXTargetDependency */,
+			);
+			name = HKCarDashTests;
+			packageProductDependencies = (
+			);
+			productName = HKCarDashTests;
+			productReference = 7002428D5D6CBAF58ACF4D33 /* HKCarDashTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		F453F9C56D19F0292D9AA225 /* HKCarDashWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FD1E27A8B88FA101043232DE /* Build configuration list for PBXNativeTarget "HKCarDashWidgets" */;
+			buildPhases = (
+				9CA6EDC57BF0FACCF36170E0 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = HKCarDashWidgets;
+			packageProductDependencies = (
+			);
+			productName = HKCarDashWidgets;
+			productReference = 5AB7A2EEBC8C673FBF2DD081 /* HKCarDashWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		965B3C6CF34E743CF334FB46 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					27B5F5FBC240F80E28B08822 = {
+						DevelopmentTeam = A7YC2GSU54;
+						ProvisioningStyle = Automatic;
+					};
+					7A9C4A003E649992CBF52270 = {
+						DevelopmentTeam = A7YC2GSU54;
+						ProvisioningStyle = Automatic;
+					};
+					F453F9C56D19F0292D9AA225 = {
+						DevelopmentTeam = A7YC2GSU54;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = C00ECBD14E965D58E89C4B78 /* Build configuration list for PBXProject "HKCarDash" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 4F688D808471B1F71CF7A34C;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 27D65D1412F4F0F055096068 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				27B5F5FBC240F80E28B08822 /* HKCarDash */,
+				7A9C4A003E649992CBF52270 /* HKCarDashTests */,
+				F453F9C56D19F0292D9AA225 /* HKCarDashWidgets */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		4F441B756C121CA2E3BD2C72 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1EB998885CCC6E878D493550 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8004E971B0DEF97F7FBF9F32 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6F0F5F958507216B1DED6097 /* TollEngineTests.swift in Sources */,
+				40AB132E566D09DF66BC4552 /* WidgetTimelineTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9CA6EDC57BF0FACCF36170E0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A653014CB2448DD6A350085F /* AppGroup.swift in Sources */,
+				B8175769A46D2E1AFEB04D00 /* Brand.swift in Sources */,
+				8D6C17FD2618123DCCA2C27A /* DashProtocol.swift in Sources */,
+				38FAB5162925C8A9498DD83C /* FuelPriceService.swift in Sources */,
+				F105D609B5ADF1C1AF094324 /* FuelWidget.swift in Sources */,
+				12CAAB960F1519059F2B2FFE /* HKCarDashWidgets.swift in Sources */,
+				15B21608358EF42A43F90918 /* HolidayService.swift in Sources */,
+				51B408A5AFBDB9841604B0AB /* JourneyTimeService.swift in Sources */,
+				9DAACAAB803E1F90B63F3B4E /* JourneyWidget.swift in Sources */,
+				EF927A85818DF6B989102412 /* OperatingPeriod.swift in Sources */,
+				4ED06B8ACDAA1803C6423F43 /* SlotConfig.swift in Sources */,
+				98CA771908DD2CC9D78B8B7B /* TollEngine.swift in Sources */,
+				C3052653402029D94B131227 /* TollWidget.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F86ADB3ABC63D2D84ABCB44F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0331452DFDA4654AF0AE2FA4 /* AppGroup.swift in Sources */,
+				B016FF9D1BBFCB44E4F0F8BA /* Brand.swift in Sources */,
+				F012CB01B47B68AD136CA1BC /* DashCentral.swift in Sources */,
+				4559AD4029FEDE52982BE985 /* DashCoordinator.swift in Sources */,
+				9C4FB297707DE4AF98FC2788 /* DashProtocol.swift in Sources */,
+				7284FE3A9312E3311E0CBF14 /* DashboardView.swift in Sources */,
+				BEC5FFBDACF307A10991D9F7 /* DemoMode.swift in Sources */,
+				5BB198DCB88BD9C36827903C /* DeviceView.swift in Sources */,
+				AA49C1193D928D342D19973F /* FuelPriceService.swift in Sources */,
+				1925FD2F410094F864010984 /* HKCarDashApp.swift in Sources */,
+				AE9A67EF421BE52C2DC86333 /* HolidayService.swift in Sources */,
+				5DFC782FC4D2AD96C08A4D3A /* JourneyTimeService.swift in Sources */,
+				590938312C5741B64A37E49E /* LiveDataStore.swift in Sources */,
+				90845748C1986BEFB14FBEFE /* MeterMapScreen.swift in Sources */,
+				A2617909859EBF9E6699E772 /* MeterQueryService.swift in Sources */,
+				F9CC492B26D7A27612593D12 /* MeterStore.swift in Sources */,
+				C0E8E3223F1A471FC1E4242C /* OnboardingView.swift in Sources */,
+				3D5CA4683C70CCF9D6F13F34 /* OperatingPeriod.swift in Sources */,
+				0366A7BF2D39D04B36AB0334 /* PairingToken.swift in Sources */,
+				6A2F2A3CDE595E5D67623D00 /* QRScannerView.swift in Sources */,
+				522B0D8D78A3792A466D2FAF /* SettingsView.swift in Sources */,
+				8D15A9E6393605DB0B791384 /* SlotConfig.swift in Sources */,
+				2347EF5970FFDE4812E05F3F /* TollEngine.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		4F58D3AD58E1061A76369166 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F453F9C56D19F0292D9AA225 /* HKCarDashWidgets */;
+			targetProxy = F9B12F0DFC05F59329F92A50 /* PBXContainerItemProxy */;
+		};
+		C41FC99BA5D90381E8844D5E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 27B5F5FBC240F80E28B08822 /* HKCarDash */;
+			targetProxy = FE96A095D53D29229EF5C7A6 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		02F74F0F4A186B478707C5DC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = A7YC2GSU54;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		03DEBCC2D3C10AD6C5B0266D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = HKCarDash/HKCarDash.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HKCarDash/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "HK CarDash";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.kmai.hkcardash;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		05399D4F4621A2FEC6A81702 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = HKCarDashWidgets/HKCarDashWidgets.entitlements;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HKCarDashWidgets/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.kmai.hkcardash.widgets;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		10E867C4035E2A758B6CF9B5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.kmai.HKCarDashTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HKCarDash.app/HKCarDash";
+			};
+			name = Debug;
+		};
+		5222F739F39D1EC44673FD66 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = A7YC2GSU54;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		74B98A8C5E1E34D5DF437E32 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = HKCarDashWidgets/HKCarDashWidgets.entitlements;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HKCarDashWidgets/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.kmai.hkcardash.widgets;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		96D919E4EC091C30C7209243 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = HKCarDash/HKCarDash.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HKCarDash/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "HK CarDash";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.kmai.hkcardash;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		D677029AE4AA26BAFE71E948 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.kmai.HKCarDashTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HKCarDash.app/HKCarDash";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		099E12F9DE477713E514D5F8 /* Build configuration list for PBXNativeTarget "HKCarDashTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				10E867C4035E2A758B6CF9B5 /* Debug */,
+				D677029AE4AA26BAFE71E948 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		9DCE81ADCE21586EC3A8C6ED /* Build configuration list for PBXNativeTarget "HKCarDash" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				03DEBCC2D3C10AD6C5B0266D /* Debug */,
+				96D919E4EC091C30C7209243 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C00ECBD14E965D58E89C4B78 /* Build configuration list for PBXProject "HKCarDash" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5222F739F39D1EC44673FD66 /* Debug */,
+				02F74F0F4A186B478707C5DC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		FD1E27A8B88FA101043232DE /* Build configuration list for PBXNativeTarget "HKCarDashWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				05399D4F4621A2FEC6A81702 /* Debug */,
+				74B98A8C5E1E34D5DF437E32 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 965B3C6CF34E743CF334FB46 /* Project object */;
+}

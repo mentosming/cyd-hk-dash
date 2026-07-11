@@ -7,13 +7,13 @@
 		<string>bluetooth-central</string>
 	</array>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>連接車內 CYD-DASH 顯示屏推送隧道及咪錶數據</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>搜尋你附近嘅咪錶空位（掃一掃需要背景定位）</string>
+	<string>連接你車上嘅 CYD-DASH 顯示屏，推送隧道時間、收費同咪錶資料。</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>搜尋你附近嘅咪錶空位</string>
+	<string>喺地圖顯示你附近有空位嘅咪錶。位置只會喺你部手機處理，唔會上傳。</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>喺車載顯示屏撳「掃一掃」搵附近咪錶時 App 可能喺背景，所以需要背景定位。位置只會喺你部手機處理，唔會上傳。</string>
 	<key>NSCameraUsageDescription</key>
-	<string>掃描顯示屏上嘅 QR 完成配對</string>
+	<string>掃描顯示屏上面嘅 QR code 完成配對。</string>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UISupportedInterfaceOrientations</key>
@@ -24,10 +24,11 @@
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>com.kaming.cyddash.pair</string>
+			<string>com.kmai.hkcardash.pair</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>cyddash</string>
+				<string>hkcardash</string>
 			</array>
 		</dict>
 	</array>

@@ -4,7 +4,15 @@
 // header on line 3.
 import CoreLocation
 import Foundation
+import MapKit
 
+// Thread-safety: `spaces`/`grid` are read from the main thread (map delegate,
+// SwiftUI) and written from a URLSession continuation, and `loadOrRefresh()` is
+// called from three places (app init, the map tab, and the BLE 掃一掃 flow) that
+// can overlap. Everything therefore goes through `lock`, and `loadOrRefresh()`
+// coalesces concurrent callers onto one in-flight Task — without that, two
+// ingests could publish `spaces` and `grid` out of step and a reader would index
+// the new array with a stale grid index (crash).
 final class MeterStore {
     static let url = URL(
         string: "https://resource.data.one.gov.hk/td/psiparkingspaces/spaceinfo/parkingspaces.csv")!
@@ -20,12 +28,17 @@ final class MeterStore {
         let operatingPeriod: String  // official code, see OperatingPeriod.swift
     }
 
-    private(set) var spaces: [Space] = []
-    // 0.005° grid (~500 m) -> space indices, for radius lookups
-    private var grid: [Int: [Int]] = [:]
+    private let lock = NSLock()
+    private var _spaces: [Space] = []
+    // 0.005° grid (~500 m) -> space indices, for radius/region lookups
+    private var _grid: [Int: [Int]] = [:]
+    private var loadTask: Task<Void, Never>?
+
     var logger: ((String) -> Void)?
 
-    var count: Int { spaces.count }
+    var count: Int { lock.withLock { _spaces.count } }
+    var allIDs: [String] { lock.withLock { _spaces.map(\.id) } }
+    private var isEmpty: Bool { lock.withLock { _spaces.isEmpty } }
 
     private static var cacheFile: URL {
         let dir = FileManager.default.urls(for: .applicationSupportDirectory,
@@ -34,17 +47,33 @@ final class MeterStore {
         return dir.appendingPathComponent("parkingspaces.csv")
     }
 
+    /// Idempotent: concurrent callers all await the same load.
     func loadOrRefresh() async {
-        if spaces.isEmpty, let data = try? Data(contentsOf: Self.cacheFile) {
+        var isOwner = false
+        let task: Task<Void, Never> = {
+            lock.lock()
+            defer { lock.unlock() }
+            if let t = loadTask { return t }
+            let t = Task { await self.performLoad() }
+            loadTask = t
+            isOwner = true
+            return t
+        }()
+        await task.value
+        if isOwner { lock.withLock { loadTask = nil } }
+    }
+
+    private func performLoad() async {
+        if isEmpty, let data = try? Data(contentsOf: Self.cacheFile) {
             ingest(data)
         }
         let fetchedAt = UserDefaults.standard.double(forKey: Self.fetchedAtKey)
         let dayAgo = Date().timeIntervalSince1970 - 86400
-        guard spaces.isEmpty || fetchedAt < dayAgo else { return }
+        guard isEmpty || fetchedAt < dayAgo else { return }
 
         var req = URLRequest(url: Self.url)
         req.timeoutInterval = 60
-        if let etag = UserDefaults.standard.string(forKey: Self.etagKey), !spaces.isEmpty {
+        if let etag = UserDefaults.standard.string(forKey: Self.etagKey), !isEmpty {
             req.setValue(etag, forHTTPHeaderField: "If-None-Match")
         }
         do {
@@ -57,12 +86,42 @@ final class MeterStore {
                 UserDefaults.standard.set(http.value(forHTTPHeaderField: "Etag"),
                                           forKey: Self.etagKey)
                 ingest(data)
-                logger?("咪錶庫: 解析到 \(spaces.count) 個車位")
+                logger?("咪錶庫: 解析到 \(count) 個車位")
             }
             UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: Self.fetchedAtKey)
         } catch {
             logger?("咪錶庫: 下載失敗 \(error.localizedDescription)")
         }
+    }
+
+    /// Spaces inside a map region — used by the map tab, which only ever
+    /// materialises annotations for what is on screen (20k+ spaces total).
+    /// Reuses the same 0.005° grid index as the radius query.
+    func spaces(inRegion region: MKCoordinateRegion) -> [Space] {
+        // MKMapView can hand back a NaN/absurd region before its first layout,
+        // and Int(Double.nan) traps — so bail on anything non-finite or absurd.
+        let lat = region.center.latitude, lon = region.center.longitude
+        let dLat = region.span.latitudeDelta, dLon = region.span.longitudeDelta
+        guard lat.isFinite, lon.isFinite, dLat.isFinite, dLon.isFinite,
+              dLat > 0, dLon > 0, dLat < 1, dLon < 1 else { return [] }
+
+        let minLat = lat - dLat / 2, maxLat = lat + dLat / 2
+        let minLon = lon - dLon / 2, maxLon = lon + dLon / 2
+
+        lock.lock()
+        defer { lock.unlock() }
+        var out: [Space] = []
+        for latCell in Int(floor(minLat / 0.005))...Int(floor(maxLat / 0.005)) {
+            for lonCell in Int(floor(minLon / 0.005))...Int(floor(maxLon / 0.005)) {
+                for idx in _grid[Self.gridKey(latCell: latCell, lonCell: lonCell)] ?? [] {
+                    let s = _spaces[idx]
+                    if s.lat >= minLat, s.lat <= maxLat, s.lon >= minLon, s.lon <= maxLon {
+                        out.append(s)
+                    }
+                }
+            }
+        }
+        return out
     }
 
     func spaces(within radiusM: Double, of coord: CLLocationCoordinate2D) -> [(Space, Double)] {
@@ -71,12 +130,14 @@ final class MeterStore {
         let baseLon = Int(coord.longitude / 0.005)
         let here = CLLocation(latitude: coord.latitude, longitude: coord.longitude)
 
+        lock.lock()
+        defer { lock.unlock() }
         var out: [(Space, Double)] = []
         for dLat in -cellsSpan...cellsSpan {
             for dLon in -cellsSpan...cellsSpan {
                 let key = Self.gridKey(latCell: baseLat + dLat, lonCell: baseLon + dLon)
-                for idx in grid[key] ?? [] {
-                    let s = spaces[idx]
+                for idx in _grid[key] ?? [] {
+                    let s = _spaces[idx]
                     let d = here.distance(from: CLLocation(latitude: s.lat, longitude: s.lon))
                     if d <= radiusM { out.append((s, d)) }
                 }
@@ -124,11 +185,17 @@ final class MeterStore {
                                 operatingPeriod: cols[opCol]))
         }
         guard !parsed.isEmpty else { return }
-        spaces = parsed
-        grid = [:]
-        for (i, s) in spaces.enumerated() {
+
+        var newGrid: [Int: [Int]] = [:]
+        for (i, s) in parsed.enumerated() {
             let key = Self.gridKey(latCell: Int(s.lat / 0.005), lonCell: Int(s.lon / 0.005))
-            grid[key, default: []].append(i)
+            newGrid[key, default: []].append(i)
+        }
+        // Publish spaces + grid together, or a reader could index the new array
+        // with a stale grid index.
+        lock.withLock {
+            _spaces = parsed
+            _grid = newGrid
         }
     }
 

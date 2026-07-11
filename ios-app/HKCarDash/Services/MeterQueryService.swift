@@ -7,6 +7,13 @@ final class MeterQueryService: NSObject {
     static let occupancyURL = URL(
         string: "https://resource.data.one.gov.hk/td/psiparkingspaces/occupancystatus/occupancystatus.csv")!
 
+    /// `working` = ParkingMeterStatus "N" (broken/suspended meters must not be
+    /// counted as vacant); `vacant` = OccupancyStatus "V" on a working meter.
+    struct Occupancy {
+        let working: Bool
+        let vacant: Bool
+    }
+
     private let store: MeterStore
     private let locationManager = CLLocationManager()
     private var locationContinuation: CheckedContinuation<CLLocationCoordinate2D?, Never>?
@@ -94,13 +101,16 @@ final class MeterQueryService: NSObject {
 
     // MARK: occupancy
 
-    /// ParkingSpaceId -> (working: meter status N, vacant: occupancy V)
-    func fetchOccupancy() async -> [String: (working: Bool, vacant: Bool)]? {
+    func fetchOccupancy() async -> [String: Occupancy]? { await Self.fetchOccupancy() }
+
+    /// ParkingSpaceId -> occupancy snapshot. Static: it needs no MeterStore, so
+    /// the map can call it without standing up a second 20k-row database.
+    static func fetchOccupancy() async -> [String: Occupancy]? {
         var req = URLRequest(url: Self.occupancyURL)
         req.timeoutInterval = 20
         guard let (data, _) = try? await URLSession.shared.data(for: req),
               let text = String(data: data, encoding: .utf8) else { return nil }
-        var out: [String: (working: Bool, vacant: Bool)] = [:]
+        var out: [String: Occupancy] = [:]
         out.reserveCapacity(21000)
         // CRLF file — "\r\n" is one Character in Swift, split on isNewline
         for line in text.split(whereSeparator: \.isNewline).dropFirst() {  // header on line 1
@@ -109,7 +119,7 @@ final class MeterQueryService: NSObject {
             let id = String(cols[0]).trimmingCharacters(in: .whitespaces)
             let working = cols[1].trimmingCharacters(in: .whitespaces) == "N"
             let vacant = cols[2].trimmingCharacters(in: .whitespaces) == "V"
-            out[id] = (working, working && vacant)
+            out[id] = Occupancy(working: working, vacant: working && vacant)
         }
         return out.isEmpty ? nil : out
     }
@@ -126,6 +136,9 @@ final class MeterQueryService: NSObject {
             return loc.coordinate
         }
         return await withCheckedContinuation { cont in
+            // Never drop an unresumed continuation — that Task would hang forever
+            // (and its background-task assertion would never be released).
+            locationContinuation?.resume(returning: locationManager.location?.coordinate)
             locationContinuation = cont
             locationManager.requestLocation()
         }

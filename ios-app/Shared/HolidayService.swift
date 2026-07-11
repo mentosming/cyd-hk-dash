@@ -10,7 +10,7 @@ final class HolidayService {
     private var dates: Set<String>
 
     init() {
-        dates = Set(UserDefaults.standard.stringArray(forKey: Self.cacheKey) ?? [])
+        dates = Set(AppGroup.defaults.stringArray(forKey: Self.cacheKey) ?? [])
     }
 
     /// bits 0-3: today / +1 / +2 / +3 days (HK local) use the Sun/PH schedule.
@@ -31,7 +31,7 @@ final class HolidayService {
     }
 
     func refreshIfStale() async {
-        let fetchedAt = UserDefaults.standard.double(forKey: Self.cachedAtKey)
+        let fetchedAt = AppGroup.defaults.double(forKey: Self.cachedAtKey)
         let weekAgo = Date().timeIntervalSince1970 - 7 * 86400
         guard dates.isEmpty || fetchedAt < weekAgo else { return }
         do {
@@ -39,8 +39,8 @@ final class HolidayService {
             let parsed = Self.parse(data)
             guard !parsed.isEmpty else { return }
             dates = parsed
-            UserDefaults.standard.set(Array(parsed), forKey: Self.cacheKey)
-            UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: Self.cachedAtKey)
+            AppGroup.defaults.set(Array(parsed), forKey: Self.cacheKey)
+            AppGroup.defaults.set(Date().timeIntervalSince1970, forKey: Self.cachedAtKey)
         } catch {
             // keep the stale cache; Sundays still work without it
         }
