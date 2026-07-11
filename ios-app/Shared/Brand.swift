@@ -35,6 +35,17 @@ enum WidgetFormat {
 
     static func isLiveMinutes(_ m: UInt8) -> Bool { m < DashProtocol.minutesClosed }
 
+    /// Next toll change: imminent → count down; hours away → wall-clock time.
+    /// ("283 分後" is true and useless.) Kept identical across the app, the
+    /// widgets, the firmware and the web demo.
+    static func nextTollText(_ r: TollEngine.Result, secOfDay: Int) -> String? {
+        guard r.nextChangeSec < 86400 else { return nil }
+        let mins = (r.nextChangeSec - secOfDay + 59) / 60
+        if mins < 60 { return "\(mins)分後 $\(r.nextDollars)" }
+        let h = r.nextChangeSec / 3600, m = (r.nextChangeSec % 3600) / 60
+        return String(format: "%02d:%02d $%d", h, m, r.nextDollars)
+    }
+
     static func ageText(_ date: Date?) -> String {
         guard let d = date else { return "--" }
         let mins = Int(-d.timeIntervalSinceNow / 60)

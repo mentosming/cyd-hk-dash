@@ -6,6 +6,8 @@
 <title>CYD-DASH · 香港車載儀錶板</title>
 <meta name="description" content="用瀏覽器一鍵燒錄 ESP32 車載顯示屏 — 香港過海隧道行車時間、時變收費、咪錶空位、油價。開源。">
 <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+<link rel="stylesheet" href="demo.css">
+<script src="demo.js" defer></script>
 <style>
   :root {
     --teal: #18AD8E; --teal-dk: #0F8A70;
@@ -73,6 +75,42 @@
     <h1>CYD-<span class="accent">DASH</span></h1>
     <p class="sub">香港車載儀錶板。一塊 ~HK$80 嘅 ESP32 屏，插車 USB，即刻睇到過海隧道行車時間、現時時段收費、附近咪錶空位同油價。</p>
   </header>
+
+  <!-- Live replica of the actual device screen. Same 320x240 layout as the
+       firmware; the tolls are computed here with the same engine, and the
+       journey times are the live TD feed. -->
+  <div class="device">
+    <div class="board">
+      <div class="usb"></div>
+      <div class="bezel">
+        <div class="screen-wrap">
+          <div id="screen">
+            <div class="hdr">
+              <div class="accent"></div>
+              <div id="title">過海隧道</div>
+              <div id="updated" class="updated cjk">等待數據</div>
+              <div id="clock">--:--</div>
+              <div id="btdot" class="btdot"></div>
+            </div>
+
+            <div id="page" class="page p0"></div>
+
+            <div class="tabs">
+              <div class="tab cjk active">過海</div>
+              <div class="tab cjk">幹道</div>
+              <div class="tab cjk">咪錶</div>
+              <div class="tab cjk">油價</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="device-cap">
+      ↑ 真嘅螢幕，唔係圖。<b>收費係實時計算</b>（同 firmware 同一條引擎），<b>行車時間係運輸署即時數據</b>。<br>
+      撳下面啲掣，或者左右掃 — 同部機一模一樣。<br>
+      <span style="opacity:.65;font-size:12px">（咪錶用示範數據 — 真機要靠你部手機嘅 GPS）</span>
+    </p>
+  </div>
 
   <div class="grid">
     <div class="card"><h3>過海隧道</h3><p>紅隧 / 東隧 / 西隧 雙向實時行車時間，加現時時段收費同下次轉價倒數。</p></div>

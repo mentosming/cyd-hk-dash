@@ -62,9 +62,8 @@ private struct TollCard: View {
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 10)
                             .background(Brand.teal, in: RoundedRectangle(cornerRadius: 12))
-                        if r.nextChangeSec < 86400 {
-                            let mins = (r.nextChangeSec - sec + 59) / 60
-                            Text("\(mins)分後 $\(r.nextDollars)")
+                        if let next = WidgetFormat.nextTollText(r, secOfDay: sec) {
+                            Text(next)
                                 .font(.system(size: 11)).foregroundStyle(.secondary)
                                 .lineLimit(1).minimumScaleFactor(0.8)
                         } else {

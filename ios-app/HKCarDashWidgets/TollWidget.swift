@@ -130,15 +130,15 @@ struct TollWidgetView: View {
         }
     }
 
-    /// "12 分鐘後 $30" — the soonest upcoming change across the three crossings.
+    /// The soonest upcoming change across the three crossings.
     private var nextChangeLine: some View {
         let soonest = entry.tolls
             .filter { $0.result.nextChangeSec < 86400 }
             .min { $0.result.nextChangeSec < $1.result.nextChangeSec }
         return Group {
-            if let s = soonest {
-                let mins = (s.result.nextChangeSec - entry.secOfDay + 59) / 60
-                Text("\(s.crossing.name) \(mins)分鐘後 $\(s.result.nextDollars)")
+            if let s = soonest,
+               let txt = WidgetFormat.nextTollText(s.result, secOfDay: entry.secOfDay) {
+                Text("\(s.crossing.name) \(txt)")
             } else {
                 Text("今日冇再轉價")
             }

@@ -1,0 +1,49 @@
+name: Refresh demo data
+
+# The landing page's live screen reads fuel prices and the public-holiday list
+# from docs/data/. Neither endpoint sends CORS headers, so the browser cannot
+# fetch them directly — snapshot them here instead. (Journey times DO send
+# `access-control-allow-origin: *`, so those are fetched live in the browser.)
+on:
+  schedule:
+    - cron: '17 20 * * *'   # 04:17 HKT daily
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Snapshot fuel prices + public holidays
+        run: |
+          python3 - <<'PY'
+          import json, urllib.request, datetime, pathlib
+
+          out = pathlib.Path("docs/data"); out.mkdir(parents=True, exist_ok=True)
+
+          fuel = json.load(urllib.request.urlopen(
+              "https://www.consumer.org.hk/pricewatch/oilwatch/opendata/oilprice.json"))
+          json.dump({"fetchedAt": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                     "prices": fuel},
+                    open(out / "fuel.json", "w"), ensure_ascii=False, indent=1)
+
+          ph = json.load(urllib.request.urlopen("https://www.1823.gov.hk/common/ical/tc.json"))
+          days = sorted({e["dtstart"][0] for e in ph["vcalendar"][0]["vevent"]
+                         if len(e["dtstart"][0]) == 8})
+          year = datetime.date.today().year
+          json.dump([d for d in days if int(d[:4]) >= year],
+                    open(out / "holidays.json", "w"), indent=0)
+          print("refreshed")
+          PY
+
+      - name: Commit if changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/data
+          git diff --staged --quiet || git commit -m "chore: refresh demo data (fuel prices, holidays)"
+          git push origin HEAD:main || true

@@ -35,7 +35,10 @@ lv_obj_t* pageHarbourCreate(lv_obj_t* parent) {
   lv_obj_set_size(page, SCR_W, PAGE_H);
 
   for (int i = 0; i < 3; i++) {
-    lv_obj_t* card = makeCard(page, 6, 2 + i * 62, SCR_W - 12, 58);
+    // 58px pitch / 54px tall: at the old 62/58 the third card ran to y=184 but
+    // PAGE_H is 176 (240 - 30 header - 34 tab bar), so 西隧's toll countdown
+    // was being clipped off the bottom of the screen.
+    lv_obj_t* card = makeCard(page, 6, 2 + i * 58, SCR_W - 12, 54);
     TunnelCard& c = g_cards[i];
 
     lv_obj_t* name = makeLabel(card, &font_cjk_20, COL_TEXT, kNames[i]);
@@ -43,19 +46,19 @@ lv_obj_t* pageHarbourCreate(lv_obj_t* parent) {
 
     // 港→九 group
     lv_obj_t* lbl1 = makeLabel(card, &font_cjk_16, COL_TEXT_DIM, "港→九");
-    lv_obj_set_pos(lbl1, 62, 5);
+    lv_obj_set_pos(lbl1, 62, 3);
     c.minutesHK2K = makeLabel(card, &lv_font_montserrat_28, COL_TEXT_DIM, "--");
-    lv_obj_set_pos(c.minutesHK2K, 62, 24);
+    lv_obj_set_pos(c.minutesHK2K, 62, 21);
     c.arrowHK2K = makeLabel(card, &font_cjk_16, COL_TEXT_DIM, "");
-    lv_obj_set_pos(c.arrowHK2K, 112, 28);
+    lv_obj_set_pos(c.arrowHK2K, 112, 25);
 
     // 九→港 group
     lv_obj_t* lbl2 = makeLabel(card, &font_cjk_16, COL_TEXT_DIM, "九→港");
-    lv_obj_set_pos(lbl2, 142, 5);
+    lv_obj_set_pos(lbl2, 142, 3);
     c.minutesK2HK = makeLabel(card, &lv_font_montserrat_28, COL_TEXT_DIM, "--");
-    lv_obj_set_pos(c.minutesK2HK, 142, 24);
+    lv_obj_set_pos(c.minutesK2HK, 142, 21);
     c.arrowK2HK = makeLabel(card, &font_cjk_16, COL_TEXT_DIM, "");
-    lv_obj_set_pos(c.arrowK2HK, 192, 28);
+    lv_obj_set_pos(c.arrowK2HK, 192, 25);
 
     // HKeToll-style toll pill
     c.tollPill = lv_obj_create(card);
@@ -114,7 +117,16 @@ void pageHarbourUpdate(const AppState& s, bool dim) {
       lv_label_set_text(c.tollNext, "");
     } else {
       uint32_t minsTo = (r.next_change_sec - now.secOfDay + 59) / 60;
-      lv_label_set_text_fmt(c.tollNext, "%lu分後 $%d", (unsigned long)minsTo, r.next_dollars);
+      if (minsTo < 60) {
+        // Imminent: count down. During a ramp this ticks every 2 minutes.
+        lv_label_set_text_fmt(c.tollNext, "%lu分後 $%d", (unsigned long)minsTo, r.next_dollars);
+      } else {
+        // Hours away: "283分後" is useless — give the wall-clock time instead.
+        lv_label_set_text_fmt(c.tollNext, "%02lu:%02lu $%d",
+                              (unsigned long)(r.next_change_sec / 3600),
+                              (unsigned long)((r.next_change_sec % 3600) / 60),
+                              r.next_dollars);
+      }
     }
   }
 }
